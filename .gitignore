@@ -1,0 +1,29 @@
+# --- Python / Django ---
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.pot
+
+# Django media/static (si lo usas)
+media/
+staticfiles/
+
+# Entornos virtuales
+venv/
+.env/
+djangoServer/
+.venv/
+
+# --- Node / Frontend ---
+node_modules/
+dist/
+build/
+.next/
+out/
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
