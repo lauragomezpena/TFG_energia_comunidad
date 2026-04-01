@@ -3,6 +3,8 @@ from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser
+from .serializers import UserSerializer 
+from rest_framework.views import APIView
 
 class UserRegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
