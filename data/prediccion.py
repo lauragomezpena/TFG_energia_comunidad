@@ -65,8 +65,15 @@ def create_features(series: pd.Series) -> pd.DataFrame:
 def evaluate(y_true, y_pred, label):
     mae  = mean_absolute_error(y_true, y_pred)
     rmse = np.sqrt(mean_squared_error(y_true, y_pred))
-    mape = np.mean(np.abs((y_true - y_pred) / (y_true + 1e-6))) * 100
-    return {'house': label, 'MAE': round(mae,4), 'RMSE': round(rmse,4), 'MAPE': round(mape,2)}
+    
+    # MAPE solo sobre horas con consumo real > 0.05 kWh (evitar división por ~0)
+    mask = y_true > 0.05
+    if mask.sum() > 0:
+        mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
+    else:
+        mape = np.nan
+    
+    return {'house': label, 'MAE': round(mae, 4), 'RMSE': round(rmse, 4), 'MAPE': round(mape, 2)}
 
 results = []
 
