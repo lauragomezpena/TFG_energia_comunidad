@@ -13,11 +13,17 @@ import {
   ResponsiveContainer
 } from "recharts";
 import "../globals.css";
+import "./style.css";
 
 export default function DashboardPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [chartReady, setChartReady] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setChartReady(true);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -44,9 +50,8 @@ export default function DashboardPage() {
         }
 
         const result = await res.json();
-        
-        // Formateamos la fecha para que sea más legible en Recharts
-        const formattedData = result.map(d => ({
+
+        const formattedData = result.map((d) => ({
           ...d,
           fecha_corta: new Date(d.timestamp).toLocaleDateString()
         }));
@@ -62,31 +67,31 @@ export default function DashboardPage() {
     fetchData();
   }, [router]);
 
-  // Cálculos resumen (KPIs)
   const totalAgua = data.reduce((acc, curr) => acc + curr.water_m3, 0).toFixed(2);
   const totalElectricidad = data.reduce((acc, curr) => acc + curr.electricity_kwh, 0).toFixed(2);
 
-  // Extraemos el nombre del piso del primer registro si está disponible
   const nombrePiso = data.length > 0 && data[0].home ? data[0].home.name : "tu vivienda";
 
   return (
-    <div className="container" style={{ padding: '2rem 1rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+    <div className="container dashboard-page">
+      <header className="dashboard-header">
         <div>
-          <h1 style={{ color: 'var(--primary-dark)' }}>Panel de Control Energético</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Bienvenido a los consumos de <strong>{nombrePiso}</strong></p>
+          <h1 className="dashboard-title">Panel de Control Energético</h1>
+          <p className="dashboard-subtitle">
+            Bienvenido a los consumos de <strong>{nombrePiso}</strong>
+          </p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button 
-            className="btn-primary" 
-            style={{ backgroundColor: 'var(--primary-blue)' }}
+
+        <div className="dashboard-actions">
+          <button
+            className="btn-primary profile-btn"
             onClick={() => router.push("/perfil")}
           >
             Mi Perfil
           </button>
-          <button 
-            className="btn-primary" 
-            style={{ backgroundColor: '#ef4444' }}
+
+          <button
+            className="btn-primary logout-btn"
             onClick={() => {
               localStorage.clear();
               router.push("/");
@@ -98,44 +103,85 @@ export default function DashboardPage() {
       </header>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>Cargando tus datos energéticos...</div>
+        <div className="loading-message">Cargando tus datos energéticos...</div>
       ) : data.length === 0 ? (
         <div className="card text-center">No hay datos registrados para tu vivienda.</div>
       ) : (
         <>
-          {/* Tarjetas KPI */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div className="kpi-grid">
             <div className="card">
-              <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Consumo Eléctrico Total</h3>
-              <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary-blue)' }}>{totalElectricidad} <span style={{ fontSize: '1rem' }}>kWh</span></p>
+              <h3 className="kpi-label">Consumo Eléctrico Total</h3>
+              <p className="kpi-value electricity-value">
+                {totalElectricidad} <span className="kpi-unit">kWh</span>
+              </p>
             </div>
+
             <div className="card">
-              <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Consumo de ACS Total</h3>
-              <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>{totalAgua} <span style={{ fontSize: '1rem' }}>m³</span></p>
+              <h3 className="kpi-label">Consumo de ACS Total</h3>
+              <p className="kpi-value water-value">
+                {totalAgua} <span className="kpi-unit">m³</span>
+              </p>
             </div>
+
             <div className="card">
-              <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Est. Coste Acumulado</h3>
-              {/* En la base de datos es 0 por ahora, mostramos 0 o un placeholder */}
-              <p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f59e0b' }}>0.00 <span style={{ fontSize: '1rem' }}>€</span></p>
+              <h3 className="kpi-label">Est. Coste Acumulado</h3>
+              <p className="kpi-value cost-value">
+                0.00 <span className="kpi-unit">€</span>
+              </p>
             </div>
           </div>
 
-          {/* Gráfico principal */}
-          <div className="card" style={{ width: '100%', minHeight: '350px', marginBottom: '2rem' }}>
-            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Evolución de Consumo Histórico</h2>
-            <div style={{ width: '100%', height: '350px' }}>
-              <ResponsiveContainer width="99%" height="100%">
-                <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="fecha_corta" minTickGap={50} />
-                  <YAxis yAxisId="left" label={{ value: 'kWh (Electr)', angle: -90, position: 'insideLeft', offset: -5 }} />
-                  <YAxis yAxisId="right" orientation="right" label={{ value: 'm³ (Agua)', angle: 90, position: 'insideRight', offset: 5 }} />
-                  <Tooltip />
-                  <Legend />
-                  <Line yAxisId="left" type="monotone" dataKey="electricity_kwh" name="Electricidad" stroke="var(--primary-blue)" dot={false} strokeWidth={2} />
-                  <Line yAxisId="right" type="step" dataKey="water_m3" name="Agua Caliente (ACS)" stroke="var(--accent-green)" dot={false} strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
+          <div className="card chart-card">
+            <h2 className="chart-title">Evolución de Consumo Histórico</h2>
+
+            <div className="chart-shell">
+              {chartReady && (
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="fecha_corta" minTickGap={50} />
+                    <YAxis
+                      yAxisId="left"
+                      label={{
+                        value: "kWh (Electr)",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: -5
+                      }}
+                    />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      label={{
+                        value: "m³ (Agua)",
+                        angle: 90,
+                        position: "insideRight",
+                        offset: 5
+                      }}
+                    />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="electricity_kwh"
+                      name="Electricidad"
+                      stroke="var(--primary-blue)"
+                      dot={false}
+                      strokeWidth={2}
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="step"
+                      dataKey="water_m3"
+                      name="Agua Caliente (ACS)"
+                      stroke="var(--accent-green)"
+                      dot={false}
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         </>

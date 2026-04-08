@@ -153,7 +153,7 @@ export default function PerfilPage() {
         <div>
           <h1 className="perfil-title">Mi Perfil</h1>
           <p className="perfil-subtitle">
-            Configura tu cuenta y revisa el resumen del mes
+            Revisa el resumen del mes
           </p>
         </div>
 
@@ -169,105 +169,43 @@ export default function PerfilPage() {
         <div className="loading-message">Cargando datos...</div>
       ) : (
         <div className="perfil-grid">
-         
+          <div className="card summary-card">
+            <h2 className="section-title section-title-bordered">
+              Los Últimos 30 Días
+            </h2>
 
-          <div className="forms-column">
-            <div className="card">
-              <h2 className="form-title">Vincular Correo Electrónico</h2>
-              <p className="form-description">
-                Añade el correo al que quieres que te lleguen las notificaciones,
-                alertas de sobreconsumo o estimaciones del modelo de IA.
-              </p>
-
-              <form onSubmit={handleUpdateEmail} className="form-layout">
-                {emailMessage.text && (
-                  <div
-                    className={`message-box ${
-                      emailMessage.type === "error" ? "message-error" : "message-success"
-                    }`}
-                  >
-                    {emailMessage.text}
-                  </div>
-                )}
-
+            {hasData ? (
+              <div className="summary-content">
                 <div>
-                  <label className="form-label">
-                    Correo Electrónico (Tu Email)
-                  </label>
-                  <input
-                    type="email"
-                    className="input-field"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="tucorreo@ejemplo.com"
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="btn-primary">
-                  Asociar Email
-                </button>
-              </form>
-            </div>
-
-            <div className="card">
-              <h2 className="form-title">Cambiar Contraseña</h2>
-
-              <form onSubmit={handleUpdatePassword} className="form-layout">
-                {passwordMessage.text && (
-                  <div
-                    className={`message-box ${
-                      passwordMessage.type === "error"
-                        ? "message-error"
-                        : "message-success"
-                    }`}
-                  >
-                    {passwordMessage.text}
-                  </div>
-                )}
-
-                <div>
-                  <label className="form-label">Contraseña actual</label>
-                  <input
-                    type="password"
-                    className="input-field"
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    required
-                  />
+                  <h3 className="metric-label">Consumo Eléctrico 30D</h3>
+                  <p className="metric-value electricity-value">
+                    {consumo30dElectricidad} <span className="metric-unit">kWh</span>
+                  </p>
                 </div>
 
                 <div>
-                  <label className="form-label">Nueva contraseña</label>
-                  <input
-                    type="password"
-                    className="input-field"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                  />
+                  <h3 className="metric-label">Consumo de ACS 30D</h3>
+                  <p className="metric-value water-value">
+                    {consumo30dAgua} <span className="metric-unit">m³</span>
+                  </p>
                 </div>
 
-                <div>
-                  <label className="form-label">Confirmar nueva contraseña</label>
-                  <input
-                    type="password"
-                    className="input-field"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
+                <div className="insight-box">
+                  <p className="insight-text">
+                    <strong>Insight inteligente:</strong> Los totales del último mes
+                    móvil son representativos para poder simular estimaciones de coste.
+                    Si vinculas un e-mail real en la sección contigua, podremos enviarte
+                    estos resúmenes mes a mes.
+                  </p>
                 </div>
-
-                <button
-                  type="submit"
-                  className="btn-primary security-btn"
-                >
-                  Actualizar Seguridad
-                </button>
-              </form>
-            </div>
+              </div>
+            ) : (
+              <p>No tienes consumos registrados todavía.</p>
+            )}
           </div>
+
+          
+
         </div>
       )}
     </div>
