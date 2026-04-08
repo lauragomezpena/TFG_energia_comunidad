@@ -28,7 +28,7 @@ export default function DashboardPage() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:8000/energy/readings/", {
+        const res = await fetch("http://127.0.0.1:8000/energy/readings/", {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -76,16 +76,25 @@ export default function DashboardPage() {
           <h1 style={{ color: 'var(--primary-dark)' }}>Panel de Control Energético</h1>
           <p style={{ color: 'var(--text-muted)' }}>Bienvenido a los consumos de <strong>{nombrePiso}</strong></p>
         </div>
-        <button 
-          className="btn-primary" 
-          style={{ backgroundColor: '#ef4444' }}
-          onClick={() => {
-            localStorage.clear();
-            router.push("/");
-          }}
-        >
-          Cerrar Sesión
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            className="btn-primary" 
+            style={{ backgroundColor: 'var(--primary-blue)' }}
+            onClick={() => router.push("/perfil")}
+          >
+            Mi Perfil
+          </button>
+          <button 
+            className="btn-primary" 
+            style={{ backgroundColor: '#ef4444' }}
+            onClick={() => {
+              localStorage.clear();
+              router.push("/");
+            }}
+          >
+            Cerrar Sesión
+          </button>
+        </div>
       </header>
 
       {loading ? (
@@ -112,20 +121,22 @@ export default function DashboardPage() {
           </div>
 
           {/* Gráfico principal */}
-          <div className="card" style={{ height: '400px', marginBottom: '2rem' }}>
+          <div className="card" style={{ width: '100%', minHeight: '350px', marginBottom: '2rem' }}>
             <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Evolución de Consumo Histórico</h2>
-            <ResponsiveContainer width="100%" height="100%" minHeight={300}>
-              <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="fecha_corta" minTickGap={50} />
-                <YAxis yAxisId="left" label={{ value: 'kWh (Electr)', angle: -90, position: 'insideLeft' }} />
-                <YAxis yAxisId="right" orientation="right" label={{ value: 'm³ (Agua)', angle: 90, position: 'insideRight' }} />
-                <Tooltip />
-                <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="electricity_kwh" name="Electricidad" stroke="var(--primary-blue)" dot={false} strokeWidth={2} />
-                <Line yAxisId="right" type="step" dataKey="water_m3" name="Agua Caliente (ACS)" stroke="var(--accent-green)" dot={false} strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div style={{ width: '100%', height: '350px' }}>
+              <ResponsiveContainer width="99%" height="100%">
+                <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="fecha_corta" minTickGap={50} />
+                  <YAxis yAxisId="left" label={{ value: 'kWh (Electr)', angle: -90, position: 'insideLeft', offset: -5 }} />
+                  <YAxis yAxisId="right" orientation="right" label={{ value: 'm³ (Agua)', angle: 90, position: 'insideRight', offset: 5 }} />
+                  <Tooltip />
+                  <Legend />
+                  <Line yAxisId="left" type="monotone" dataKey="electricity_kwh" name="Electricidad" stroke="var(--primary-blue)" dot={false} strokeWidth={2} />
+                  <Line yAxisId="right" type="step" dataKey="water_m3" name="Agua Caliente (ACS)" stroke="var(--accent-green)" dot={false} strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </>
       )}

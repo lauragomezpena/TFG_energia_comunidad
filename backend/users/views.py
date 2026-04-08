@@ -3,7 +3,8 @@ from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser
-from .serializers import UserSerializer 
+from .serializers import UserSerializer, ChangePasswordSerializer, UpdateEmailSerializer
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 class UserRegisterView(generics.CreateAPIView):
@@ -49,3 +50,28 @@ class LogoutView(APIView):
             status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class ChangePasswordView(generics.UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = self.get_object()
+            if not user.check_password(serializer.data.get("old_password")):
+                return Response({"old_password": ["Contraseña antigua incorrecta."]}, status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(serializer.data.get("new_password"))
+            user.save()
+            return Response({"message": "Contraseña actualizada con éxito."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateEmailView(generics.UpdateAPIView):
+    serializer_class = UpdateEmailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
