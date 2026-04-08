@@ -38,6 +38,15 @@ class Command(BaseCommand):
         df_energia.set_index(col_fecha_energia, inplace=True)
         df_acs.set_index(col_fecha_acs, inplace=True)
 
+        # Convertimos los valores acumulativos en incrementos (consumo por hora)
+        for col in df_energia.columns:
+            if col.startswith("energia") and col != "energia":
+                df_energia[col] = df_energia[col].diff().clip(lower=0).fillna(0.0)
+                
+        for col in df_acs.columns:
+            if col.startswith("volumen"):
+                df_acs[col] = df_acs[col].diff().clip(lower=0).fillna(0.0)
+
         # Unimos ambos dataframes por hora
         df_merged = df_energia.join(df_acs, how="inner")
         

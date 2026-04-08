@@ -66,12 +66,15 @@ export default function DashboardPage() {
   const totalAgua = data.reduce((acc, curr) => acc + curr.water_m3, 0).toFixed(2);
   const totalElectricidad = data.reduce((acc, curr) => acc + curr.electricity_kwh, 0).toFixed(2);
 
+  // Extraemos el nombre del piso del primer registro si está disponible
+  const nombrePiso = data.length > 0 && data[0].home ? data[0].home.name : "tu vivienda";
+
   return (
     <div className="container" style={{ padding: '2rem 1rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ color: 'var(--primary-dark)' }}>Panel de Control Energético</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Bienvenido a tus consumos personalizados</p>
+          <p style={{ color: 'var(--text-muted)' }}>Bienvenido a los consumos de <strong>{nombrePiso}</strong></p>
         </div>
         <button 
           className="btn-primary" 
@@ -111,7 +114,7 @@ export default function DashboardPage() {
           {/* Gráfico principal */}
           <div className="card" style={{ height: '400px', marginBottom: '2rem' }}>
             <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Evolución de Consumo Histórico</h2>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minHeight={300}>
               <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="fecha_corta" minTickGap={50} />
