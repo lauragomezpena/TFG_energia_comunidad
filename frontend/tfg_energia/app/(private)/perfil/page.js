@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import "../globals.css";
+import "../../globals.css";
 import "./style.css";
 
 export default function PerfilPage() {
@@ -156,13 +156,6 @@ export default function PerfilPage() {
             Configura tu cuenta y revisa el resumen del mes
           </p>
         </div>
-
-        <button
-          className="btn-primary back-btn"
-          onClick={() => router.push("/dashboard")}
-        >
-          Dashboard
-        </button>
       </header>
 
       {loading ? (

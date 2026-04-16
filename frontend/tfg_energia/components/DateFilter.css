@@ -1,0 +1,94 @@
+.date-filter-container {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.date-filter-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--primary-dark);
+}
+
+.filter-icon {
+  color: var(--primary-blue);
+}
+
+.date-filter-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .date-filter-body {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.date-inputs {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.input-group label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.input-group input {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #374151;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  border-color: var(--primary-blue);
+}
+
+.quick-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quick-filters button {
+  background-color: #f3f4f6;
+  border: 1px solid transparent;
+  color: #4b5563;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px; /* Pill shape */
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-filters button:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.quick-filters button:active {
+  background-color: #d1d5db;
+}

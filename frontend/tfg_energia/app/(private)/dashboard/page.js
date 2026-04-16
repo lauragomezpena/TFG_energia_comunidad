@@ -12,7 +12,7 @@ import {
   Legend,
   ResponsiveContainer
 } from "recharts";
-import "../globals.css";
+import "../../globals.css";
 import "./style.css";
 
 export default function DashboardPage() {
@@ -83,22 +83,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="dashboard-actions">
-          <button
-            className="btn-primary profile-btn"
-            onClick={() => router.push("/perfil")}
-          >
-            Mi Perfil
-          </button>
-
-          <button
-            className="btn-primary logout-btn"
-            onClick={() => {
-              localStorage.clear();
-              router.push("/");
-            }}
-          >
-            Cerrar Sesión
-          </button>
+          {/* Los botones han sido movidos al Sidebar global */}
         </div>
       </header>
 
