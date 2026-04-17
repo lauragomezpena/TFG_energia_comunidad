@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { useState } from "react";
 import "./Sidebar.css";
 
@@ -29,6 +29,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       name: "Mensual",
       icon: <CalendarDays size={20} />,
       path: "/mensual",
+    },
+    {
+      name: "Comunidad",
+      icon: <Users size={20} />,
+      path: "/comunidad",
     },
     {
       name: "Mi Perfil",

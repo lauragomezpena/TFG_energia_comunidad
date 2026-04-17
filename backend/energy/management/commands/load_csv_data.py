@@ -43,6 +43,12 @@ class Command(BaseCommand):
             if col.startswith("energia") and col != "energia":
                 df_energia[col] = df_energia[col].diff().clip(lower=0).fillna(0.0)
                 
+        # Zonas communes
+        comunes_acumulativas = ["energia", "etermicaconserje", "erefrigeración conserje", "etermicasolar", "CAUDAL AGUA CALIENTE"]
+        for col in comunes_acumulativas:
+            if col in df_energia.columns:
+                df_energia[col] = df_energia[col].diff().clip(lower=0).fillna(0.0)
+
         for col in df_acs.columns:
             if col.startswith("volumen"):
                 df_acs[col] = df_acs[col].diff().clip(lower=0).fillna(0.0)
@@ -70,6 +76,12 @@ class Command(BaseCommand):
             home, h_created = Home.objects.get_or_create(name=f"Piso {piso}", owner=user)
             homes_dict[piso] = home
             
+        # Crear usuario admin y home Comunidad
+        admin_user, _ = User.objects.get_or_create(username='admin', defaults={'role': 'admin', 'is_superuser': True, 'is_staff': True})
+        admin_user.set_password('admin123')
+        admin_user.save()
+        home_comunidad, _ = Home.objects.get_or_create(name="Zonas Comunes", owner=admin_user)
+
         self.stdout.write(self.style.SUCCESS("Generando lecturas..."))
         
         # Para optimizar inserciones
@@ -111,6 +123,30 @@ class Command(BaseCommand):
                     Reading.objects.bulk_create(readings_to_insert)
                     self.stdout.write(f"Insertados {count} registros...")
                     readings_to_insert = []
+            
+            # Generar lectura para Zonas Comunes
+            val_energia_comun = (
+                row.get("energia", 0.0) +
+                row.get("etermicaconserje", 0.0) +
+                row.get("erefrigeración conserje", 0.0) +
+                row.get("etermicasolar", 0.0)
+            )
+            val_agua_comun = row.get("CAUDAL AGUA CALIENTE", 0.0)
+
+            if pd.isna(val_energia_comun): val_energia_comun = 0.0
+            if pd.isna(val_agua_comun): val_agua_comun = 0.0
+
+            if val_energia_comun > 0.0 or val_agua_comun > 0.0:
+                reading_comun = Reading(
+                    home=home_comunidad,
+                    timestamp=aware_timestamp,
+                    electricity_kwh=float(val_energia_comun),
+                    water_m3=float(val_agua_comun),
+                    gas_kwh=0.0,
+                    cost_eur=0.0
+                )
+                readings_to_insert.append(reading_comun)
+                count += 1
         
         if readings_to_insert:
             Reading.objects.bulk_create(readings_to_insert)

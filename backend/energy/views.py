@@ -8,11 +8,12 @@ class HomeListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Admin can see all, owners can see only theirs
+        # Admin can see all, owners can see only theirs + Zonas Comunes
         user = self.request.user
         if user.role == 'admin':
             return Home.objects.all()
-        return Home.objects.filter(owner=user)
+        from django.db.models import Q
+        return Home.objects.filter(Q(owner=user) | Q(name="Zonas Comunes"))
 
 class ReadingListView(generics.ListAPIView):
     serializer_class = ReadingSerializer
@@ -26,11 +27,12 @@ class ReadingListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        # Filtering by user's homes
+        # Filtering by user's homes + Zonas Comunes
+        from django.db.models import Q
         if user.role == 'admin':
             queryset = Reading.objects.all()
         else:
-            queryset = Reading.objects.filter(home__owner=user)
+            queryset = Reading.objects.filter(Q(home__owner=user) | Q(home__name="Zonas Comunes"))
         
         # Opcional: Filtrar por casa si viene en query params ("?home_id=X")
         home_id = self.request.query_params.get('home_id')
