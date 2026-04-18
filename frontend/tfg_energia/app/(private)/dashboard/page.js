@@ -10,7 +10,8 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Brush
 } from "recharts";
 import "../../globals.css";
 import "./style.css";
@@ -51,10 +52,20 @@ export default function DashboardPage() {
 
         const result = await res.json();
 
-        const formattedData = result.map((d) => ({
+        // Filtrar Zonas Comunes para mostrar solo el piso del usuario
+        let myHomeResult = result.filter(d => d.home && d.home.name !== "Zonas Comunes");
+
+        // Si el usuario es admin, la API devuelve TODOS los pisos. Vamos a aislar solo uno para que la gráfica no mezcle datos.
+        if (myHomeResult.length > 0) {
+          const firstHomeId = myHomeResult[0].home.id;
+          myHomeResult = myHomeResult.filter(d => d.home.id === firstHomeId);
+        }
+
+        const formattedData = myHomeResult.map((d) => ({
           ...d,
-          fecha_corta: new Date(d.timestamp).toLocaleDateString()
-        }));
+          fecha_corta: new Date(d.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+          timestamp_ms: new Date(d.timestamp).getTime()
+        })).sort((a, b) => a.timestamp_ms - b.timestamp_ms);
 
         setData(formattedData);
         setLoading(false);
@@ -164,6 +175,7 @@ export default function DashboardPage() {
                       dot={false}
                       strokeWidth={2}
                     />
+                    <Brush dataKey="fecha_corta" height={30} stroke="#8884d8" travellerWidth={10} />
                   </LineChart>
                 </ResponsiveContainer>
               )}

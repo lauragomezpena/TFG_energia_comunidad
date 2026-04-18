@@ -153,7 +153,7 @@ export default function PerfilPage() {
         <div>
           <h1 className="perfil-title">Mi Perfil</h1>
           <p className="perfil-subtitle">
-            Configura tu cuenta y revisa el resumen del mes
+            Configura tu cuenta
           </p>
         </div>
       </header>
