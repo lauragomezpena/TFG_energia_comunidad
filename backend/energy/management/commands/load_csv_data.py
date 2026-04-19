@@ -106,17 +106,18 @@ class Command(BaseCommand):
                 if pd.isna(val_energia): val_energia = 0.0
                 if pd.isna(val_agua): val_agua = 0.0
                 
-                # Insertamos siempre para mantener la vista en escala de tiempo (no importa si es 0)
-                reading = Reading(
-                    home=homes_dict[piso],
-                    timestamp=aware_timestamp,
-                    electricity_kwh=float(val_energia),
-                    water_m3=float(val_agua),
-                    gas_kwh=0.0,
-                    cost_eur=0.0
-                )
-                readings_to_insert.append(reading)
-                count += 1
+                # Insertamos si hay consumo
+                if val_energia > 0.0 or val_agua > 0.0:
+                    reading = Reading(
+                        home=homes_dict[piso],
+                        timestamp=aware_timestamp,
+                        electricity_kwh=float(val_energia),
+                        water_m3=float(val_agua),
+                        gas_kwh=0.0,
+                        cost_eur=0.0
+                    )
+                    readings_to_insert.append(reading)
+                    count += 1
                 
                 if len(readings_to_insert) >= batch_size:
                     Reading.objects.bulk_create(readings_to_insert)
@@ -135,16 +136,17 @@ class Command(BaseCommand):
             if pd.isna(val_energia_comun): val_energia_comun = 0.0
             if pd.isna(val_agua_comun): val_agua_comun = 0.0
 
-            reading_comun = Reading(
-                home=home_comunidad,
-                timestamp=aware_timestamp,
-                electricity_kwh=float(val_energia_comun),
-                water_m3=float(val_agua_comun),
-                gas_kwh=0.0,
-                cost_eur=0.0
-            )
-            readings_to_insert.append(reading_comun)
-            count += 1
+            if val_energia_comun > 0.0 or val_agua_comun > 0.0:
+                reading_comun = Reading(
+                    home=home_comunidad,
+                    timestamp=aware_timestamp,
+                    electricity_kwh=float(val_energia_comun),
+                    water_m3=float(val_agua_comun),
+                    gas_kwh=0.0,
+                    cost_eur=0.0
+                )
+                readings_to_insert.append(reading_comun)
+                count += 1
         
         if readings_to_insert:
             Reading.objects.bulk_create(readings_to_insert)

@@ -43,10 +43,8 @@ export default function MensualPage() {
 
         const result = await res.json();
         
-        // Filtrar Zonas Comunes para mostrar solo el piso del usuario
         let myHomeResult = result.filter(d => d.home && d.home.name !== "Zonas Comunes");
 
-        // Si el usuario es admin, la API devuelve TODOS los pisos. Aislar solo uno.
         if (myHomeResult.length > 0) {
           const firstHomeId = myHomeResult[0].home.id;
           myHomeResult = myHomeResult.filter(d => d.home.id === firstHomeId);
@@ -55,7 +53,7 @@ export default function MensualPage() {
         // Formatear fechas
         const formattedData = myHomeResult.map(d => ({
           ...d,
-          fecha_corta: new Date(d.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+          fecha_corta: new Date(d.timestamp).toLocaleDateString(),
           timestamp_ms: new Date(d.timestamp).getTime()
         })).sort((a, b) => a.timestamp_ms - b.timestamp_ms);
 
