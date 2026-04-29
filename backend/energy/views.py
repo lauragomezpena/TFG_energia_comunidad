@@ -1,11 +1,16 @@
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 from .models import Reading, Home
 from .serializers import ReadingSerializer, HomeSerializer
+from .services.tariff_recommendation import generate_recommendation
 
 class HomeListView(generics.ListAPIView):
     serializer_class = HomeSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         # Admin can see all, owners can see only theirs + Zonas Comunes
@@ -40,3 +45,28 @@ class ReadingListView(generics.ListAPIView):
             queryset = queryset.filter(home_id=home_id)
             
         return queryset.order_by('timestamp')
+
+class TariffRecommendationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        home_id = request.query_params.get('home_id')
+        
+        if not home_id:
+            if user.role != 'admin':
+                home = Home.objects.filter(owner=user).first()
+                if home:
+                    home_id = home.id
+            else:
+                return Response({"error": "Debe proporcionar home_id"}, status=400)
+                
+        home = get_object_or_404(Home, id=home_id)
+        if user.role != 'admin' and home.owner != user:
+            return Response({"error": "Permiso denegado"}, status=403)
+            
+        result = generate_recommendation(home.id)
+        if "error" in result:
+            return Response({"error": result["error"]}, status=400)
+            
+        return Response(result)
