@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser
 from .serializers import UserSerializer, ChangePasswordSerializer, UpdateEmailSerializer
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
@@ -75,3 +77,43 @@ class UpdateEmailView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        user = self.get_object()
+        
+        # Enviar el correo de confirmación
+        subject = '¡Bienvenido a E-Community! ⚡'
+        message = f'Hola {user.username},\n\nTu email ({user.email}) ha sido registrado correctamente.'
+        html_message = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #1e88e5; font-size: 28px; margin: 0;">E-Community</h2>
+                <p style="color: #888; margin-top: 5px;">Plataforma de Gestión Energética</p>
+            </div>
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">Hola <b>{user.username}</b>,</p>
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">Tu dirección de correo electrónico (<strong>{user.email}</strong>) ha sido vinculada con éxito a tu panel de control de vivienda.</p>
+            <div style="background-color: #f4f9fd; padding: 20px; border-left: 5px solid #1e88e5; border-radius: 0 8px 8px 0; margin: 25px 0;">
+                <p style="margin: 0; font-size: 15px; color: #444; line-height: 1.5;">
+                    A partir de este momento, nuestro motor analítico podrá enviarte alertas de desviaciones de consumo, avisos predictivos y tu recomendación mensual de tarifas directamente a esta bandeja de entrada.
+                </p>
+            </div>
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">¡Empieza a descubrir todo lo que puedes ahorrar!</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+            <p style="font-size: 13px; color: #aaa; text-align: center; margin: 0;">
+                © 2026 E-Community.<br>Este es un mensaje automático de tu sistema TFG.
+            </p>
+        </div>
+        """
+        
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [user.email],
+                fail_silently=False,
+                html_message=html_message
+            )
+        except Exception as e:
+            print(f"Error enviando correo a {user.email}: {e}")
