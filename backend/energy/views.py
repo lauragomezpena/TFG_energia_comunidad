@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from .models import Reading, Home
 from .serializers import ReadingSerializer, HomeSerializer
 from .services.tariff_recommendation import generate_recommendation
+from .services.prediction_service import generate_forecast
 
 class HomeListView(generics.ListAPIView):
     serializer_class = HomeSerializer
@@ -69,4 +70,30 @@ class TariffRecommendationView(APIView):
         if "error" in result:
             return Response({"error": result["error"]}, status=400)
             
+        return Response(result)
+
+
+class PredictionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        home_id = request.query_params.get('home_id')
+
+        if not home_id:
+            if user.role != 'admin':
+                home = Home.objects.filter(owner=user).first()
+                if home:
+                    home_id = home.id
+            else:
+                return Response({"error": "Debe proporcionar home_id"}, status=400)
+
+        home = get_object_or_404(Home, id=home_id)
+        if user.role != 'admin' and home.owner != user:
+            return Response({"error": "Permiso denegado"}, status=403)
+
+        result = generate_forecast(home.id)
+        if "error" in result:
+            return Response({"error": result["error"]}, status=400)
+
         return Response(result)

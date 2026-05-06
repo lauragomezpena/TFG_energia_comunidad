@@ -29,3 +29,20 @@ class Reading(models.Model):
 
     def __str__(self):
         return f"{self.home.name} @ {self.timestamp}"
+
+class PredictionResult(models.Model):
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name="predictions")
+    created_at = models.DateTimeField(auto_now_add=True)
+    forecast_start = models.DateTimeField()
+    
+    total_predicted_kwh = models.FloatField()
+    estimated_cost_eur = models.FloatField(null=True, blank=True)
+    recommended_tariff = models.CharField(max_length=120, null=True, blank=True)
+    
+    hourly_data = models.JSONField()
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Prediction for {self.home.name} at {self.created_at}"
