@@ -182,8 +182,8 @@ export default function MensualPage() {
                   <YAxis yAxisId="right" orientation="right" label={{ value: 'm³ (Agua)', angle: 90, position: 'insideRight', offset: 5 }} />
                   <Tooltip />
                   <Legend />
-                  <Line yAxisId="left" type="monotone" dataKey="electricity_kwh" name="Electricidad" stroke="var(--primary-blue)" dot={false} strokeWidth={2} />
-                  <Line yAxisId="right" type="step" dataKey="water_m3" name="Agua Caliente (ACS)" stroke="var(--accent-green)" dot={false} strokeWidth={2} />
+                  <Line yAxisId="left" type="monotone" dataKey="electricity_kwh" name="Electricidad" stroke="#FF9800" dot={false} strokeWidth={2} />
+                  <Line yAxisId="right" type="step" dataKey="water_m3" name="Agua Caliente (ACS)" stroke="#00BCD4" dot={false} strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

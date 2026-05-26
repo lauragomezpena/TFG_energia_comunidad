@@ -197,7 +197,7 @@ export default function PrediccionesPage() {
                     type="monotone"
                     dataKey="electricity_kwh"
                     name="Electricidad (predicción horaria)"
-                    stroke="var(--primary-blue)"
+                    stroke="#FF9800"
                     dot={false}
                     strokeWidth={1.5}
                   />

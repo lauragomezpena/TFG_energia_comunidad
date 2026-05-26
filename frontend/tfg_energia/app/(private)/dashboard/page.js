@@ -159,7 +159,7 @@ export default function DashboardPage() {
                       type="monotone"
                       dataKey="electricity_kwh"
                       name="Electricidad"
-                      stroke="var(--primary-blue)"
+                      stroke="#FF9800"
                       dot={false}
                       strokeWidth={2}
                     />
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                       type="step"
                       dataKey="water_m3"
                       name="Agua Caliente (ACS)"
-                      stroke="var(--accent-green)"
+                      stroke="#00BCD4"
                       dot={false}
                       strokeWidth={2}
                     />

@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .models import Reading, Home
-from .serializers import ReadingSerializer, HomeSerializer
+from .models import Reading, Home, Alert
+from .serializers import ReadingSerializer, HomeSerializer, AlertSerializer
 from .services.tariff_recommendation import generate_recommendation
 from .services.prediction_service import generate_forecast
 
@@ -97,3 +97,36 @@ class PredictionView(APIView):
             return Response({"error": result["error"]}, status=400)
 
         return Response(result)
+
+
+class AlertListView(generics.ListAPIView):
+    serializer_class = AlertSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Alert.objects.filter(home__owner=user)
+        
+        home_id = self.request.query_params.get('home_id')
+        if home_id:
+            queryset = queryset.filter(home_id=home_id)
+            
+        status = self.request.query_params.get('status')
+        if status:
+            queryset = queryset.filter(status=status.upper())
+            
+        is_read = self.request.query_params.get('is_read')
+        if is_read is not None:
+            is_read_bool = is_read.lower() == 'true'
+            queryset = queryset.filter(is_read=is_read_bool)
+            
+        return queryset
+
+
+class AlertDetailView(generics.RetrieveUpdateAPIView):
+    serializer_class = AlertSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Alert.objects.filter(home__owner=self.request.user)

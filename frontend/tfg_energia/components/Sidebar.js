@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, ChevronLeft, ChevronRight, Users, Zap, TrendingUp } from "lucide-react";
+import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, ChevronLeft, ChevronRight, Users, Zap, TrendingUp, Bell } from "lucide-react";
 import { useState } from "react";
 import "./Sidebar.css";
 
@@ -44,6 +44,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       name: "Predicciones",
       icon: <TrendingUp size={20} />,
       path: "/predicciones",
+    },
+    {
+      name: "Avisos",
+      icon: <Bell size={20} />,
+      path: "/avisos",
     },
     {
       name: "Mi Perfil",

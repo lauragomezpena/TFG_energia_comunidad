@@ -46,3 +46,53 @@ class PredictionResult(models.Model):
 
     def __str__(self):
         return f"Prediction for {self.home.name} at {self.created_at}"
+
+class Alert(models.Model):
+    ALERT_TYPES = (
+        ('HIGH_NIGHT_USAGE', 'Consumo nocturno inusualmente alto'),
+        ('ANOMALOUS_PEAK', 'Pico de consumo anómalo'),
+        ('HIGH_STANDBY', 'Consumo base elevado sostenido'),
+        ('TARIFF_SAVING', 'Posible ahorro por cambio de tarifa'),
+        ('HIGH_USAGE', 'Consumo semanal inusualmente alto'),
+    )
+    
+    SEVERITY_LEVELS = (
+        ('LOW', 'Baja'),
+        ('MEDIUM', 'Media'),
+        ('HIGH', 'Alta'),
+    )
+    
+    STATUS_CHOICES = (
+        ('ACTIVE', 'Activa'),
+        ('RESOLVED', 'Resuelta'),
+        ('DISMISSED', 'Descartada'),
+    )
+
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name="alerts")
+    alert_type = models.CharField(max_length=50, choices=ALERT_TYPES)
+    severity = models.CharField(max_length=20, choices=SEVERITY_LEVELS)
+    
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    
+    detection_date = models.DateTimeField(auto_now_add=True)
+    start_period = models.DateTimeField(null=True, blank=True)
+    end_period = models.DateTimeField(null=True, blank=True)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
+    is_read = models.BooleanField(default=False)
+    
+    observed_value = models.FloatField(null=True, blank=True)
+    reference_value = models.FloatField(null=True, blank=True)
+    
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-detection_date"]
+        # Evitar duplicados exactos activos de la misma alerta para la misma casa
+        indexes = [
+            models.Index(fields=["home", "status", "alert_type"]),
+        ]
+
+    def __str__(self):
+        return f"[{self.status}] {self.get_severity_display()} - {self.title} ({self.home.name})"

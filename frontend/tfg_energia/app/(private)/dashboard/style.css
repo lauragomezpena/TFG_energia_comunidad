@@ -62,11 +62,11 @@
 }
 
 .electricity-value {
-    color: var(--primary-blue);
+    color: #FF9800;
 }
 
 .water-value {
-    color: var(--accent-green);
+    color: #00BCD4;
 }
 
 .cost-value {
