@@ -122,8 +122,13 @@ export default function ComunidadPage() {
     return data.filter(d => d.timestamp_ms >= startMs && d.timestamp_ms <= endMs);
   }, [data, startDate, endDate]);
 
-  const totalAgua = filteredData.reduce((acc, curr) => acc + curr.water_m3, 0).toFixed(2);
-  const totalElectricidad = filteredData.reduce((acc, curr) => acc + curr.electricity_kwh, 0).toFixed(2);
+  const numDays = useMemo(() => {
+    const uniqueDays = new Set(filteredData.map(d => new Date(d.timestamp_ms).toISOString().split('T')[0]));
+    return Math.max(uniqueDays.size, 1);
+  }, [filteredData]);
+
+  const avgElectricidad = (filteredData.reduce((acc, curr) => acc + curr.electricity_kwh, 0) / numDays).toFixed(2);
+  const avgAgua = (filteredData.reduce((acc, curr) => acc + curr.water_m3, 0) / numDays).toFixed(2);
 
   return (
     <div className="container perfil-page">
@@ -153,16 +158,16 @@ export default function ComunidadPage() {
         <>
           <div className="perfil-grid" style={{ marginBottom: "2rem" }}>
             <div className="card">
-              <h3 className="metric-label">Electricidad Común (Periodo Selec.)</h3>
+              <h3 className="metric-label">Media Diaria Electricidad</h3>
               <p className="metric-value electricity-value">
-                {totalElectricidad} <span className="metric-unit">kWh</span>
+                {avgElectricidad} <span className="metric-unit">kWh/día</span>
               </p>
             </div>
 
             <div className="card">
-              <h3 className="metric-label">Agua Caliente (Periodo Selec.)</h3>
+              <h3 className="metric-label">Media Diaria Agua Caliente</h3>
               <p className="metric-value water-value">
-                {totalAgua} <span className="metric-unit">m³</span>
+                {avgAgua} <span className="metric-unit">m³/día</span>
               </p>
             </div>
           </div>

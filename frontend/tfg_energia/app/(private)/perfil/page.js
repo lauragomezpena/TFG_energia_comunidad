@@ -20,6 +20,16 @@ export default function PerfilPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMessage, setPasswordMessage] = useState({ text: "", type: "" });
 
+  // Estados Formulario Tarifa y Potencia
+  const [currentTariffType, setCurrentTariffType] = useState("PVPC");
+  const [currentTariffFixedPrice, setCurrentTariffFixedPrice] = useState("");
+  const [currentTariffP1Price, setCurrentTariffP1Price] = useState("");
+  const [currentTariffP2Price, setCurrentTariffP2Price] = useState("");
+  const [currentTariffP3Price, setCurrentTariffP3Price] = useState("");
+  const [currentPowerP1, setCurrentPowerP1] = useState("3.45");
+  const [currentPowerP2, setCurrentPowerP2] = useState("3.45");
+  const [tariffMessage, setTariffMessage] = useState({ text: "", type: "" });
+
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -53,7 +63,31 @@ export default function PerfilPage() {
       }
     };
 
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/users/profile/", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const profile = await res.json();
+          setEmail(profile.email || "");
+          setCurrentTariffType(profile.current_tariff_type || "PVPC");
+          setCurrentTariffFixedPrice(profile.current_tariff_fixed_price !== null ? profile.current_tariff_fixed_price.toString() : "");
+          setCurrentTariffP1Price(profile.current_tariff_p1_price !== null ? profile.current_tariff_p1_price.toString() : "");
+          setCurrentTariffP2Price(profile.current_tariff_p2_price !== null ? profile.current_tariff_p2_price.toString() : "");
+          setCurrentTariffP3Price(profile.current_tariff_p3_price !== null ? profile.current_tariff_p3_price.toString() : "");
+          setCurrentPowerP1(profile.current_power_p1 !== null ? profile.current_power_p1.toString() : "3.45");
+          setCurrentPowerP2(profile.current_power_p2 !== null ? profile.current_power_p2.toString() : "3.45");
+        }
+      } catch (err) {
+        console.error("Error al obtener el perfil:", err);
+      }
+    };
+
     fetchData();
+    fetchProfile();
   }, [router]);
 
   const handleUpdateEmail = async (e) => {
@@ -123,6 +157,54 @@ export default function PerfilPage() {
     }
   };
 
+  const handleUpdateTariff = async (e) => {
+    e.preventDefault();
+    setTariffMessage({ text: "", type: "" });
+
+    const payload = {
+      current_tariff_type: currentTariffType,
+      current_power_p1: parseFloat(currentPowerP1) || 0,
+      current_power_p2: parseFloat(currentPowerP2) || 0,
+    };
+
+    if (currentTariffType === "FIXED") {
+      payload.current_tariff_fixed_price = currentTariffFixedPrice !== "" ? parseFloat(currentTariffFixedPrice) : null;
+      payload.current_tariff_p1_price = null;
+      payload.current_tariff_p2_price = null;
+      payload.current_tariff_p3_price = null;
+    } else if (currentTariffType === "TOU") {
+      payload.current_tariff_fixed_price = null;
+      payload.current_tariff_p1_price = currentTariffP1Price !== "" ? parseFloat(currentTariffP1Price) : null;
+      payload.current_tariff_p2_price = currentTariffP2Price !== "" ? parseFloat(currentTariffP2Price) : null;
+      payload.current_tariff_p3_price = currentTariffP3Price !== "" ? parseFloat(currentTariffP3Price) : null;
+    } else {
+      payload.current_tariff_fixed_price = null;
+      payload.current_tariff_p1_price = null;
+      payload.current_tariff_p2_price = null;
+      payload.current_tariff_p3_price = null;
+    }
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch("http://127.0.0.1:8000/api/users/profile/", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("No se pudo actualizar la configuración de tarifa.");
+      }
+
+      setTariffMessage({ text: "Tu configuración de tarifa se ha guardado correctamente.", type: "success" });
+    } catch (err) {
+      setTariffMessage({ text: err.message, type: "error" });
+    }
+  };
+
   let consumo30dElectricidad = 0;
   let consumo30dAgua = 0;
   const hasData = data.length > 0;
@@ -156,13 +238,155 @@ export default function PerfilPage() {
             Configura tu cuenta
           </p>
         </div>
+        {!loading && (
+          <div className="card summary-header-card">
+            <div className="summary-header-item">
+              <span className="metric-label">Consumo Eléctrico (30d)</span>
+              <div className="metric-value electricity-value compact">
+                {consumo30dElectricidad} <span className="metric-unit">kWh</span>
+              </div>
+            </div>
+            <div className="summary-header-item">
+              <span className="metric-label">Consumo de Agua (30d)</span>
+              <div className="metric-value water-value compact">
+                {consumo30dAgua} <span className="metric-unit">m³</span>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {loading ? (
         <div className="loading-message">Cargando datos...</div>
       ) : (
         <div className="perfil-grid">
-         
+          <div className="forms-column">
+            <div className="card">
+              <h2 className="form-title">Configuración de Tarifa y Potencia</h2>
+              <p className="form-description">
+                Introduce los detalles de tu tarifa eléctrica actual contratada. 
+                Esto permitirá realizar comparaciones reales con el resto de opciones disponibles.
+              </p>
+
+              <form onSubmit={handleUpdateTariff} className="form-layout">
+                {tariffMessage.text && (
+                  <div
+                    className={`message-box ${
+                      tariffMessage.type === "error" ? "message-error" : "message-success"
+                    }`}
+                  >
+                    {tariffMessage.text}
+                  </div>
+                )}
+
+                <div>
+                  <label className="form-label">Tipo de Tarifa</label>
+                  <select
+                    className="input-field select-field"
+                    value={currentTariffType}
+                    onChange={(e) => setCurrentTariffType(e.target.value)}
+                  >
+                    <option value="PVPC">PVPC (Mercado Regulado)</option>
+                    <option value="FIXED">Mercado Libre (Precio Fijo Único)</option>
+                    <option value="TOU">Mercado Libre (3 Periodos - Discriminación Horaria)</option>
+                  </select>
+                </div>
+
+                {currentTariffType === "FIXED" && (
+                  <div>
+                    <label className="form-label">Precio Energía Fijo (€/kWh)</label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      min="0"
+                      className="input-field"
+                      value={currentTariffFixedPrice}
+                      onChange={(e) => setCurrentTariffFixedPrice(e.target.value)}
+                      placeholder="Ej: 0.13"
+                      required
+                    />
+                  </div>
+                )}
+
+                {currentTariffType === "TOU" && (
+                  <div className="tariff-grid-3">
+                    <div>
+                      <label className="form-label">Precio Punta P1 (€/kWh)</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        min="0"
+                        className="input-field"
+                        value={currentTariffP1Price}
+                        onChange={(e) => setCurrentTariffP1Price(e.target.value)}
+                        placeholder="Ej: 0.18"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Precio Llano P2 (€/kWh)</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        min="0"
+                        className="input-field"
+                        value={currentTariffP2Price}
+                        onChange={(e) => setCurrentTariffP2Price(e.target.value)}
+                        placeholder="Ej: 0.13"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Precio Valle P3 (€/kWh)</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        min="0"
+                        className="input-field"
+                        value={currentTariffP3Price}
+                        onChange={(e) => setCurrentTariffP3Price(e.target.value)}
+                        placeholder="Ej: 0.09"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="tariff-grid-2">
+                  <div>
+                    <label className="form-label">Potencia Punta P1 (kW)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="input-field"
+                      value={currentPowerP1}
+                      onChange={(e) => setCurrentPowerP1(e.target.value)}
+                      placeholder="Ej: 3.45"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Potencia Valle P2 (kW)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="input-field"
+                      value={currentPowerP2}
+                      onChange={(e) => setCurrentPowerP2(e.target.value)}
+                      placeholder="Ej: 3.45"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="btn-primary">
+                  Guardar Tarifa
+                </button>
+              </form>
+            </div>
+          </div>
 
           <div className="forms-column">
             <div className="card">

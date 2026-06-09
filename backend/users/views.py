@@ -117,3 +117,11 @@ class UpdateEmailView(generics.UpdateAPIView):
             )
         except Exception as e:
             print(f"Error enviando correo a {user.email}: {e}")
+
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

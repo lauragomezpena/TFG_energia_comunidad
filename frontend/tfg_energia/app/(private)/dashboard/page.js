@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   LineChart,
@@ -75,8 +75,13 @@ export default function DashboardPage() {
     fetchData();
   }, [router]);
 
-  const totalAgua = data.reduce((acc, curr) => acc + curr.water_m3, 0).toFixed(2);
-  const totalElectricidad = data.reduce((acc, curr) => acc + curr.electricity_kwh, 0).toFixed(2);
+  const numDays = useMemo(() => {
+    const uniqueDays = new Set(data.map(d => new Date(d.timestamp_ms).toISOString().split('T')[0]));
+    return Math.max(uniqueDays.size, 1);
+  }, [data]);
+
+  const avgElectricidad = (data.reduce((acc, curr) => acc + curr.electricity_kwh, 0) / numDays).toFixed(2);
+  const avgAgua = (data.reduce((acc, curr) => acc + curr.water_m3, 0) / numDays).toFixed(2);
 
   const nombrePiso = data.length > 0 && data[0].home ? data[0].home.name : "tu vivienda";
 
@@ -103,16 +108,16 @@ export default function DashboardPage() {
         <>
           <div className="kpi-grid">
             <div className="card">
-              <h3 className="kpi-label">Consumo Eléctrico Total</h3>
+              <h3 className="kpi-label">Media Diaria Electricidad</h3>
               <p className="kpi-value electricity-value">
-                {totalElectricidad} <span className="kpi-unit">kWh</span>
+                {avgElectricidad} <span className="kpi-unit">kWh/día</span>
               </p>
             </div>
 
             <div className="card">
-              <h3 className="kpi-label">Consumo de ACS Total</h3>
+              <h3 className="kpi-label">Media Diaria ACS</h3>
               <p className="kpi-value water-value">
-                {totalAgua} <span className="kpi-unit">m³</span>
+                {avgAgua} <span className="kpi-unit">m³/día</span>
               </p>
             </div>
 

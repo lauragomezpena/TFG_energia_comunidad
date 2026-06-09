@@ -138,3 +138,72 @@
 .security-btn {
     background-color: var(--primary-dark);
 }
+
+.select-field {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 0.95rem;
+    color: var(--primary-dark);
+    cursor: pointer;
+}
+
+.select-field:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+}
+
+.tariff-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.tariff-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .tariff-grid-2, .tariff-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.summary-header-card {
+    display: flex;
+    gap: 3rem;
+    padding: 1rem 2rem;
+    margin: 0;
+    align-items: center;
+    border-radius: 12px;
+}
+
+.summary-header-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.metric-value.compact {
+    font-size: 1.6rem;
+    font-weight: 800;
+}
+
+@media (max-width: 768px) {
+    .perfil-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+    
+    .summary-header-card {
+        width: 100%;
+        justify-content: space-around;
+        gap: 1rem;
+    }
+}
