@@ -7,6 +7,7 @@ from .models import Reading, Home, Alert
 from .serializers import ReadingSerializer, HomeSerializer, AlertSerializer
 from .services.tariff_recommendation import generate_recommendation
 from .services.prediction_service import generate_forecast
+from .services.invoice_extractor import extract_invoice_info
 
 class HomeListView(generics.ListAPIView):
     serializer_class = HomeSerializer
@@ -130,3 +131,35 @@ class AlertDetailView(generics.RetrieveUpdateAPIView):
 
     def get_queryset(self):
         return Alert.objects.filter(home__owner=self.request.user)
+
+
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class UploadInvoiceView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, *args, **kwargs):
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return Response({"error": "No se ha proporcionado ningún archivo."}, status=400)
+
+        # Validar tipo mime del archivo
+        content_type = file_obj.content_type
+        if content_type not in ['application/pdf', 'image/jpeg', 'image/png']:
+            return Response({
+                "error": "Tipo de archivo no soportado. Debe ser un PDF o una imagen (JPEG/PNG)."
+            }, status=400)
+
+        # Limitar tamaño (ej: 8 MB)
+        if file_obj.size > 8 * 1024 * 1024:
+            return Response({"error": "El archivo es demasiado grande. Máximo 8 MB."}, status=400)
+
+        try:
+            # Leer bytes del archivo
+            file_bytes = file_obj.read()
+            # Llamar al servicio de extracción de Gemini
+            extracted_data = extract_invoice_info(file_bytes, content_type)
+            return Response(extracted_data)
+        except Exception as e:
+            return Response({"error": f"Error al procesar la factura: {str(e)}"}, status=500)

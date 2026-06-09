@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import pandas as pd
 import requests
 
-from energy.models import Reading
+from energy.models import Reading, Home
 
 
 # =========================================================
@@ -274,6 +274,12 @@ def annualize(value: float, days: float) -> float:
 # =========================================================
 
 def generate_recommendation(home_id: int):
+    try:
+        home = Home.objects.get(id=home_id)
+        owner = home.owner
+    except Home.DoesNotExist:
+        return {"error": "La vivienda no existe"}
+
     readings = Reading.objects.filter(home_id=home_id).order_by("-timestamp")[:WINDOW_HOURS]
 
     if not readings.exists():
@@ -309,6 +315,47 @@ def generate_recommendation(home_id: int):
 
     meter_rental_cost = days * METER_RENTAL_EUR_PER_DAY
     regulated_energy_cost = compute_regulated_energy_cost(df_readings["kwh"])
+
+    # Calcular la tarifa actual del usuario
+    current_tariff_obj = Tariff(
+        name="Tu Tarifa Actual",
+        kind=owner.current_tariff_type,
+        fixed_energy_eur_per_kwh=owner.current_tariff_fixed_price if owner.current_tariff_fixed_price is not None else 0.12,
+        tou_prices_eur_per_kwh={
+            "P1": owner.current_tariff_p1_price if owner.current_tariff_p1_price is not None else 0.18,
+            "P2": owner.current_tariff_p2_price if owner.current_tariff_p2_price is not None else 0.13,
+            "P3": owner.current_tariff_p3_price if owner.current_tariff_p3_price is not None else 0.09,
+        } if owner.current_tariff_type == "TOU" else None
+    )
+
+    current_power_cost = compute_power_cost(days, owner.current_power_p1, owner.current_power_p2)
+    current_penalty_cost = compute_excess_penalty(
+        cons_kwh=df_readings["kwh"],
+        contracted_kw_p1=owner.current_power_p1,
+        contracted_kw_p2=owner.current_power_p2,
+    )
+    current_supply_cost = compute_energy_supply_cost(
+        tariff=current_tariff_obj,
+        cons_kwh=df_readings["kwh"],
+        prices_df=prices_df,
+    )
+    current_total_window = (
+        current_power_cost
+        + regulated_energy_cost
+        + current_supply_cost
+        + meter_rental_cost
+        + current_penalty_cost
+    )
+    current_annual_cost = annualize(current_total_window, days)
+
+    current_tariff_data = {
+        "tarifa": "Tu Tarifa Actual",
+        "tipo": owner.current_tariff_type,
+        "potencia_p1_kw": owner.current_power_p1,
+        "potencia_p2_kw": owner.current_power_p2,
+        "coste_ventana_eur": round(current_total_window, 2),
+        "coste_anual_estimado_eur": round(current_annual_cost, 2),
+    }
 
     results = []
 
@@ -353,10 +400,21 @@ def generate_recommendation(home_id: int):
             })
 
     results.sort(key=lambda x: x["coste_anual_estimado_eur"])
+    best_tariff = results[0]
+
+    # Determinar si la tarifa actual del usuario es la óptima
+    is_already_optimal = False
+    if current_annual_cost <= best_tariff["coste_anual_estimado_eur"] + 2.0:
+        if owner.current_tariff_type == best_tariff["tipo"]:
+            if (abs(owner.current_power_p1 - best_tariff["potencia_p1_kw"]) < 0.01 and 
+                abs(owner.current_power_p2 - best_tariff["potencia_p2_kw"]) < 0.01):
+                is_already_optimal = True
 
     return {
         "days_analyzed": round(days, 1),
         "total_kwh": round(total_kwh, 2),
         "n_combinations": len(results),
+        "current_tariff": current_tariff_data,
+        "is_already_optimal": is_already_optimal,
         "rankings": results,
     }

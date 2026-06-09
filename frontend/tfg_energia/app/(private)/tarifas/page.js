@@ -96,6 +96,14 @@ export default function TariffsPage() {
     );
   }, [bestTariff, secondBestTariff]);
 
+  const savingsVsCurrent = useMemo(() => {
+    if (!data?.current_tariff || !bestTariff) return 0;
+    return (
+      data.current_tariff.coste_anual_estimado_eur -
+      bestTariff.coste_anual_estimado_eur
+    );
+  }, [data, bestTariff]);
+
   if (loading) {
     return (
       <div
@@ -181,19 +189,37 @@ export default function TariffsPage() {
           }}
         >
           <div style={{ flex: "1 1 340px" }}>
-            <span
-              style={{
-                background: "rgba(255,255,255,0.2)",
-                padding: "6px 12px",
-                borderRadius: "20px",
-                fontSize: "0.85rem",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-                fontWeight: "bold",
-              }}
-            >
-              🏆 Opción Más Rentable
-            </span>
+            {data.is_already_optimal ? (
+              <span
+                style={{
+                  background: "#2e7d32",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "20px",
+                  fontSize: "0.85rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                  fontWeight: "bold",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                }}
+              >
+                ✅ Ya tienes la tarifa óptima
+              </span>
+            ) : (
+              <span
+                style={{
+                  background: "rgba(255,255,255,0.2)",
+                  padding: "6px 12px",
+                  borderRadius: "20px",
+                  fontSize: "0.85rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                  fontWeight: "bold",
+                }}
+              >
+                🏆 Opción Más Rentable
+              </span>
+            )}
 
             <h2
               style={{
@@ -206,9 +232,17 @@ export default function TariffsPage() {
             </h2>
 
             <p style={{ fontSize: "1.05rem", opacity: 0.92, marginBottom: "1rem" }}>
-              Según tu patrón de consumo real, esta combinación de{" "}
-              <strong>tarifa + potencia contratada</strong> es la que minimiza
-              el coste anual estimado entre todas las opciones analizadas.
+              {data.is_already_optimal ? (
+                <>
+                  ¡Excelente! Tu tarifa actual y potencias contratadas coinciden con la opción más eficiente según tu patrón de consumo real. <strong>No necesitas realizar ningún cambio.</strong>
+                </>
+              ) : (
+                <>
+                  Según tu patrón de consumo real, esta combinación de{" "}
+                  <strong>tarifa + potencia contratada</strong> es la que minimiza
+                  el coste anual estimado entre todas las opciones analizadas.
+                </>
+              )}
             </p>
 
             <div
@@ -265,36 +299,66 @@ export default function TariffsPage() {
           >
             <div
               style={{
-                fontSize: "1rem",
+                fontSize: "1.05rem",
                 color: "var(--text-muted)",
                 fontWeight: "bold",
               }}
             >
-              COSTE ANUAL ESTIMADO
+              {data.is_already_optimal ? "TU COSTE ANUAL ESTIMADO" : "COSTE ANUAL RECOMENDADO"}
             </div>
             <div
               style={{
                 fontSize: "3rem",
                 fontWeight: "900",
                 margin: "10px 0",
-                color: "#1e88e5",
+                color: data.is_already_optimal ? "#2e7d32" : "#1e88e5",
               }}
             >
               {bestTariff.coste_anual_estimado_eur}{" "}
               <span style={{ fontSize: "1.5rem" }}>€/año</span>
             </div>
 
-            {secondBestTariff ? (
+            {data.is_already_optimal ? (
               <div
                 style={{
                   marginTop: "0.5rem",
                   fontWeight: "700",
                   color: "#2e7d32",
+                  fontSize: "0.95rem",
                 }}
               >
-                Ahorro frente a la 2ª mejor: {savingsVsSecond.toFixed(2)} €/año
+                ✓ Tienes el coste optimizado
               </div>
-            ) : null}
+            ) : (
+              <>
+                {savingsVsCurrent > 0 ? (
+                  <div
+                    style={{
+                      marginTop: "0.5rem",
+                      fontWeight: "700",
+                      color: "#2e7d32",
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Ahorro estimado: {savingsVsCurrent.toFixed(2)} €/año
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: "normal", marginTop: "4px" }}>
+                      (Tarifa actual: {data.current_tariff.coste_anual_estimado_eur} €/año)
+                    </div>
+                  </div>
+                ) : secondBestTariff ? (
+                  <div
+                    style={{
+                      marginTop: "0.5rem",
+                      fontWeight: "700",
+                      color: "#2e7d32",
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Ahorro frente a la 2ª mejor: {savingsVsSecond.toFixed(2)} €/año
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
         </div>
       </div>

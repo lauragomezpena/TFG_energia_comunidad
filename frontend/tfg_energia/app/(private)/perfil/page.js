@@ -30,6 +30,10 @@ export default function PerfilPage() {
   const [currentPowerP2, setCurrentPowerP2] = useState("3.45");
   const [tariffMessage, setTariffMessage] = useState({ text: "", type: "" });
 
+  // Estados Carga de Factura
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState({ text: "", type: "" });
+
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -205,6 +209,61 @@ export default function PerfilPage() {
     }
   };
 
+  const handleUploadInvoice = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadMessage({ text: "", type: "" });
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch("http://127.0.0.1:8000/energy/upload-invoice/", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Error al analizar la factura.");
+        } else {
+          throw new Error(`Error del servidor (${res.status}): ${res.statusText}`);
+        }
+      }
+
+      const data = await res.json();
+      
+      // Auto-rellenar el formulario con los datos extraídos
+      setCurrentTariffType(data.tariff_type || "PVPC");
+      setCurrentTariffFixedPrice(data.fixed_price !== null ? data.fixed_price.toString() : "");
+      setCurrentTariffP1Price(data.p1_price !== null ? data.p1_price.toString() : "");
+      setCurrentTariffP2Price(data.p2_price !== null ? data.p2_price.toString() : "");
+      setCurrentTariffP3Price(data.p3_price !== null ? data.p3_price.toString() : "");
+      setCurrentPowerP1(data.power_p1 !== null ? data.power_p1.toString() : "3.45");
+      setCurrentPowerP2(data.power_p2 !== null ? data.power_p2.toString() : "3.45");
+
+      setUploadMessage({
+        text: "¡Factura leída con éxito! Hemos autorellenado los campos de abajo. Por favor, revísalos y haz clic en 'Guardar Tarifa' para confirmar.",
+        type: "success"
+      });
+    } catch (err) {
+      console.error(err);
+      setUploadMessage({ text: err.message, type: "error" });
+    } finally {
+      setUploading(false);
+      // Reset input para permitir volver a cargar el mismo archivo
+      e.target.value = "";
+    }
+  };
+
   let consumo30dElectricidad = 0;
   let consumo30dAgua = 0;
   const hasData = data.length > 0;
@@ -267,6 +326,67 @@ export default function PerfilPage() {
                 Introduce los detalles de tu tarifa eléctrica actual contratada. 
                 Esto permitirá realizar comparaciones reales con el resto de opciones disponibles.
               </p>
+
+              <div
+                style={{
+                  background: "rgba(30,136,229,0.04)",
+                  border: "2px dashed rgba(30,136,229,0.3)",
+                  borderRadius: "12px",
+                  padding: "1.5rem",
+                  textAlign: "center",
+                  marginBottom: "1.5rem",
+                  position: "relative",
+                  transition: "all 0.2s"
+                }}
+              >
+                <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>📄</div>
+                <h4 style={{ margin: "0 0 0.25rem 0", color: "var(--primary-dark)", fontSize: "1rem" }}>Cargar factura de luz</h4>
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0 0 1rem 0" }}>
+                  Sube tu factura en PDF o imagen para rellenar los datos automáticamente con IA.
+                </p>
+                
+                <input
+                  type="file"
+                  id="invoice-upload"
+                  accept="application/pdf,image/jpeg,image/png"
+                  onChange={handleUploadInvoice}
+                  style={{ display: "none" }}
+                  disabled={uploading}
+                />
+                
+                <label
+                  htmlFor="invoice-upload"
+                  className="btn-primary"
+                  style={{
+                    display: "inline-block",
+                    cursor: uploading ? "not-allowed" : "pointer",
+                    padding: "8px 16px",
+                    fontSize: "0.85rem",
+                    backgroundColor: uploading ? "#9ca3af" : "var(--primary-blue)",
+                    borderRadius: "8px",
+                    color: "white",
+                    fontWeight: "500"
+                  }}
+                >
+                  {uploading ? "Procesando factura..." : "Seleccionar Archivo"}
+                </label>
+
+                {uploadMessage.text && (
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "0.85rem",
+                      backgroundColor: uploadMessage.type === "success" ? "#dcfce3" : "#fee2e2",
+                      color: uploadMessage.type === "success" ? "#15803d" : "#b91c1c",
+                      border: uploadMessage.type === "success" ? "1px solid #bbf7d0" : "1px solid #fecaca"
+                    }}
+                  >
+                    {uploadMessage.text}
+                  </div>
+                )}
+              </div>
 
               <form onSubmit={handleUpdateTariff} className="form-layout">
                 {tariffMessage.text && (

@@ -234,36 +234,37 @@ class AlertDetector:
     def check_tariff_saving(self):
         """
         Alerta: Posible ahorro por cambio de tarifa.
-        Regla: Ejecuta el recomendador. Si el ahorro anual estimado > 10% vs peor tarifa.
+        Regla: Ejecuta el recomendador. Si el ahorro anual estimado > 5% y > 15 € vs tarifa actual del usuario.
         """
         try:
             res = generate_recommendation(self.home.id)
-            if "error" in res or not res.get("rankings"):
+            if "error" in res or not res.get("rankings") or not res.get("current_tariff"):
                 return
             
             rankings = res["rankings"]
             best_tariff = rankings[0]
-            worst_tariff = rankings[-1]
+            current_tariff = res["current_tariff"]
 
             best_cost = best_tariff["coste_anual_estimado_eur"]
-            worst_cost = worst_tariff["coste_anual_estimado_eur"]
+            current_cost = current_tariff["coste_anual_estimado_eur"]
 
-            if worst_cost == 0:
+            if current_cost <= 0:
                 return
 
-            saving_ratio = (worst_cost - best_cost) / worst_cost
+            savings_eur = current_cost - best_cost
+            saving_ratio = savings_eur / current_cost
 
-            if saving_ratio > 0.15: # 15% de ahorro potencial
+            if savings_eur > 15.0 and saving_ratio > 0.05: # Más de 15 € de ahorro anual y más de 5%
                 self._update_or_create_alert(
                     alert_type='TARIFF_SAVING',
                     severity='MEDIUM',
                     title='¡Oportunidad de Ahorro!',
-                    message=f'Podrías ahorrar un {saving_ratio*100:.0f}% pasándote a la tarifa {best_tariff["tarifa"]}.',
+                    message=f'Podrías ahorrar {savings_eur:.2f} € al año ({saving_ratio*100:.0f}%) pasándote a la tarifa {best_tariff["tarifa"]} con potencia {best_tariff["potencia_p1_kw"]} kW / {best_tariff["potencia_p2_kw"]} kW.',
                     start_period=self.now - datetime.timedelta(days=90),
                     end_period=self.now,
                     observed_value=best_cost,
-                    reference_value=worst_cost,
-                    metadata={"best_tariff": best_tariff["tarifa"], "savings_eur": worst_cost - best_cost}
+                    reference_value=current_cost,
+                    metadata={"best_tariff": best_tariff["tarifa"], "savings_eur": savings_eur}
                 )
             else:
                 self._resolve_alert('TARIFF_SAVING')
