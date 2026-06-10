@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "../../api";
 import "../../globals.css";
 
 export default function TariffsPage() {
@@ -19,7 +20,7 @@ export default function TariffsPage() {
 
     const fetchData = async () => {
       try {
-        const resHomes = await fetch("http://127.0.0.1:8000/energy/homes/", {
+        const resHomes = await fetch(`${API_BASE_URL}/energy/homes/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -45,7 +46,7 @@ export default function TariffsPage() {
         const nombrePiso = homesResult[0].name;
 
         const resRec = await fetch(
-          `http://127.0.0.1:8000/energy/recommend-tariff/?home_id=${homeId}`,
+          `${API_BASE_URL}/energy/recommend-tariff/?home_id=${homeId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

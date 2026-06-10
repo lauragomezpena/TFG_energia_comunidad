@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import DateFilter from "../../../components/DateFilter";
+import { API_BASE_URL } from "../../api";
 import "../../globals.css";
 import "./style.css"; // Usa los estilos base de perfil u otros
 
@@ -27,7 +28,7 @@ export default function MensualPage() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/energy/readings/", {
+        const res = await fetch(`${API_BASE_URL}/energy/readings/`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -78,7 +79,7 @@ export default function MensualPage() {
 
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/users/profile/", {
+        const res = await fetch(`${API_BASE_URL}/api/users/profile/`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

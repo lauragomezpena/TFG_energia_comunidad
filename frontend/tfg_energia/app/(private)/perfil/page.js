@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "../../api";
 import "../../globals.css";
 import "./style.css";
 
@@ -43,7 +44,7 @@ export default function PerfilPage() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/energy/readings/", {
+        const res = await fetch(`${API_BASE_URL}/energy/readings/`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -69,7 +70,7 @@ export default function PerfilPage() {
 
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/users/profile/", {
+        const res = await fetch(`${API_BASE_URL}/api/users/profile/`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -100,7 +101,7 @@ export default function PerfilPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch("http://127.0.0.1:8000/api/users/update-email/", {
+      const res = await fetch(`${API_BASE_URL}/api/users/update-email/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -131,7 +132,7 @@ export default function PerfilPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch("http://127.0.0.1:8000/api/users/change-password/", {
+      const res = await fetch(`${API_BASE_URL}/api/users/change-password/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -190,7 +191,7 @@ export default function PerfilPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch("http://127.0.0.1:8000/api/users/profile/", {
+      const res = await fetch(`${API_BASE_URL}/api/users/profile/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -221,7 +222,7 @@ export default function PerfilPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch("http://127.0.0.1:8000/energy/upload-invoice/", {
+      const res = await fetch(`${API_BASE_URL}/energy/upload-invoice/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle, Info, Zap, Moon, BatteryWarning, TrendingDown, Clock, Check, Users } from "lucide-react";
+import { API_BASE_URL } from "../../api";
 import "../../globals.css";
 
 // Formateador de fechas
@@ -29,7 +30,7 @@ export default function AvisosPage() {
 
     setLoading(true);
     try {
-      let url = "http://127.0.0.1:8000/energy/alerts/";
+      let url = `${API_BASE_URL}/energy/alerts/`;
       if (filterStatus !== "ALL") {
         url += `?status=${filterStatus}`;
       }
@@ -62,7 +63,7 @@ export default function AvisosPage() {
   const updateAlert = async (id, payload) => {
     const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`http://127.0.0.1:8000/energy/alerts/${id}/`, {
+      const res = await fetch(`${API_BASE_URL}/energy/alerts/${id}/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

@@ -13,6 +13,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, Info, ShieldAlert, Zap, Droplet, Euro } from "lucide-react";
+import { API_BASE_URL } from "../../api";
 import "../../globals.css";
 import "./style.css";
 
@@ -50,7 +51,7 @@ export default function DashboardPage() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/energy/readings/", {
+        const res = await fetch(`${API_BASE_URL}/energy/readings/`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -80,7 +81,7 @@ export default function DashboardPage() {
           timestamp_ms: new Date(d.timestamp).getTime()
         })).sort((a, b) => a.timestamp_ms - b.timestamp_ms);
 
-        const resRec = await fetch("http://127.0.0.1:8000/energy/recommend-tariff/", {
+        const resRec = await fetch(`${API_BASE_URL}/energy/recommend-tariff/`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -90,7 +91,7 @@ export default function DashboardPage() {
           setRecommendation(recResult);
         }
 
-        const resProfile = await fetch("http://127.0.0.1:8000/api/users/profile/", {
+        const resProfile = await fetch(`${API_BASE_URL}/api/users/profile/`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -100,7 +101,7 @@ export default function DashboardPage() {
           setProfile(profileResult);
         }
 
-        const resAlerts = await fetch("http://127.0.0.1:8000/energy/alerts/?status=ACTIVE", {
+        const resAlerts = await fetch(`${API_BASE_URL}/energy/alerts/?status=ACTIVE`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

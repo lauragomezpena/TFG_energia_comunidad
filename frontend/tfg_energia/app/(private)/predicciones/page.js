@@ -12,6 +12,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { API_BASE_URL } from "../../api";
 import "../../globals.css";
 
 function formatDateLong(isoStr) {
@@ -32,7 +33,7 @@ export default function PrediccionesPage() {
     const token = localStorage.getItem("access_token");
     if (!token) { router.push("/"); return; }
 
-    fetch("http://127.0.0.1:8000/energy/homes/", {
+    fetch(`${API_BASE_URL}/energy/homes/`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => {
@@ -59,7 +60,7 @@ export default function PrediccionesPage() {
 
     const token = localStorage.getItem("access_token");
     
-    fetch(`http://127.0.0.1:8000/energy/predict/?home_id=${home.id}`, {
+    fetch(`${API_BASE_URL}/energy/predict/?home_id=${home.id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(async res => {
