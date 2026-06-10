@@ -32,7 +32,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS',
-    'testserver,127.0.0.1,localhost,tfg-energia-comunidad.onrender.com'
+    'testserver,127.0.0.1,localhost,.onrender.com'
 ).split(',')
 
 CORS_ALLOWED_ORIGINS = os.environ.get(
