@@ -428,6 +428,53 @@ def generate_recommendation(home_id: int):
                 abs(owner.current_power_p2 - best_tariff["potencia_p2_kw"]) < 0.01):
                 is_already_optimal = True
 
+    # 1. Determinar porcentaje de consumo en periodo valle (P3)
+    df_readings["period"] = [energy_period_20td(ts.to_pydatetime()) for ts in df_readings.index]
+    p3_kwh = float(df_readings[df_readings["period"] == "P3"]["kwh"].sum())
+    p3_pct = p3_kwh / total_kwh if total_kwh > 0 else 0.0
+
+    explanations = []
+
+    # Regla 1: Concentración en Valle
+    if p3_pct > 0.45:
+        explanations.append(
+            f"Esta tarifa te conviene especialmente porque concentras un {p3_pct*100:.0f}% de tu consumo en horas valle (noches y fines de semana), que es donde el precio de la energía y los peajes son sustancialmente más baratos."
+        )
+    else:
+        explanations.append(
+            f"Realizas solo un {p3_pct*100:.0f}% de tu consumo en horas valle (P3). Si consigues desplazar el uso de electrodomésticos de mayor potencia a la noche o fines de semana, aumentarás de forma drástica tu ahorro."
+        )
+
+    # Regla 2: Ahorro potencial
+    savings = current_annual_cost - best_tariff["coste_anual_estimado_eur"]
+    if savings <= 15.0:
+        explanations.append(
+            "El ahorro anual estimado frente a tu tarifa contratada actual es bajo (menos de 15 €/año), por lo que cambiar de comercializadora o de contrato no es especialmente relevante en este momento."
+        )
+    else:
+        explanations.append(
+            f"Se estima un ahorro significativo de {savings:.2f} € al año si cambias a la recomendación sugerida, optimizando tanto los precios de energía como los peajes."
+        )
+
+    # Regla 3: Potencia recomendada
+    if best_tariff["potencia_p1_kw"] <= owner.current_power_p1 and best_tariff["potencia_p2_kw"] <= owner.current_power_p2:
+        explanations.append(
+            "No se detecta necesidad de contratar más potencia de la sugerida. Tus picos históricos están cubiertos, por lo que mantienes bajo el coste fijo del término de potencia."
+        )
+    else:
+        explanations.append(
+            "Los picos de consumo observados en tu histórico aconsejan ajustar tu potencia contratada en los periodos indicados para evitar sobrecostes por excesos de demanda."
+        )
+
+    # Regla 4: Margen con la segunda mejor opción
+    if len(results) > 1:
+        second_best = results[1]
+        diff_second = second_best["coste_anual_estimado_eur"] - best_tariff["coste_anual_estimado_eur"]
+        if diff_second < 5.0:
+            explanations.append(
+                f"La opción recomendada es solo ligeramente mejor (menos de 5 €/año de diferencia) que la segunda alternativa ({second_best['tarifa']}), por lo que ambas son buenas opciones."
+            )
+
     return {
         "days_analyzed": round(days, 1),
         "total_kwh": round(total_kwh, 2),
@@ -435,4 +482,5 @@ def generate_recommendation(home_id: int):
         "current_tariff": current_tariff_data,
         "is_already_optimal": is_already_optimal,
         "rankings": results,
+        "explanations": explanations,
     }

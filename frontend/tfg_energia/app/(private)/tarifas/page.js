@@ -363,6 +363,115 @@ export default function TariffsPage() {
         </div>
       </div>
 
+      {data.explanations && data.explanations.length > 0 && (
+        <div
+          className="card"
+          style={{
+            marginBottom: "2.5rem",
+            background: "var(--card-bg)",
+            border: "1px solid var(--border-color)",
+            padding: "2rem",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "1.4rem",
+              color: "var(--primary-blue)",
+              marginBottom: "1.5rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <span>💡</span> Entendiendo tu recomendación
+          </h3>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.2rem",
+            }}
+          >
+            {data.explanations.map((exp, idx) => {
+              let icon = "📋";
+              let iconBg = "rgba(14, 165, 233, 0.1)";
+              let iconColor = "var(--primary-blue)";
+
+              if (exp.includes("valle") || exp.includes("Valle")) {
+                icon = "🌙";
+                iconBg = "rgba(156, 39, 176, 0.1)";
+                iconColor = "#9c27b0";
+              } else if (exp.includes("ahorro") || exp.includes("Ahorro")) {
+                icon = "💰";
+                iconBg = "rgba(46, 125, 50, 0.1)";
+                iconColor = "#2e7d32";
+              } else if (exp.includes("potencia") || exp.includes("Potencia")) {
+                icon = "🔌";
+                iconBg = "rgba(239, 108, 0, 0.1)";
+                iconColor = "#ef6c00";
+              } else if (exp.includes("alternativa") || exp.includes("segunda")) {
+                icon = "⚖️";
+                iconBg = "rgba(100, 116, 139, 0.1)";
+                iconColor = "#64748b";
+              }
+
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    gap: "1rem",
+                    alignItems: "flex-start",
+                    padding: "1rem 1.25rem",
+                    borderRadius: "12px",
+                    background: "var(--bg-light)",
+                    border: "1px solid var(--border-color)",
+                    transition: "transform 0.15s ease, border-color 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateX(4px)";
+                    e.currentTarget.style.borderColor = "var(--primary-blue)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.borderColor = "var(--border-color)";
+                  }}
+                >
+                  <div
+                    style={{
+                      backgroundColor: iconBg,
+                      color: iconColor,
+                      fontSize: "1.3rem",
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {icon}
+                  </div>
+                  <div style={{ flex: 1, paddingTop: "2px" }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "0.98rem",
+                        lineHeight: "1.5",
+                        color: "var(--text-main)",
+                      }}
+                    >
+                      {exp}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <h3 style={{ marginBottom: "1rem", color: "var(--text-color)" }}>
         Configuración recomendada
       </h3>
