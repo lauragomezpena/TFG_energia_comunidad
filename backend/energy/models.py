@@ -25,6 +25,9 @@ class Reading(models.Model):
         indexes = [
             models.Index(fields=["home", "timestamp"]),
         ]
+        constraints = [
+            models.UniqueConstraint(fields=["home", "timestamp"], name="unique_home_reading_timestamp")
+        ]
         ordering = ["-timestamp"]
 
     def __str__(self):
@@ -97,3 +100,11 @@ class Alert(models.Model):
 
     def __str__(self):
         return f"[{self.status}] {self.get_severity_display()} - {self.title} ({self.home.name})"
+
+class TariffRecommendationResult(models.Model):
+    home = models.OneToOneField(Home, on_delete=models.CASCADE, related_name="recommendation_result")
+    created_at = models.DateTimeField(auto_now=True)
+    data = models.JSONField()
+
+    def __str__(self):
+        return f"Tariff Recommendation cache for {self.home.name} at {self.created_at}"

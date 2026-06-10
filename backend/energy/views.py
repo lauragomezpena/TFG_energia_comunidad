@@ -67,9 +67,22 @@ class TariffRecommendationView(APIView):
         if user.role != 'admin' and home.owner != user:
             return Response({"error": "Permiso denegado"}, status=403)
             
+        # 1. Intentar servir desde caché persistida en base de datos
+        from .models import TariffRecommendationResult
+        cached = TariffRecommendationResult.objects.filter(home=home).first()
+        if cached:
+            return Response(cached.data)
+
+        # 2. Hot-fallback si no está precalculada (ej: primer arranque o nuevo usuario)
         result = generate_recommendation(home.id)
         if "error" in result:
             return Response({"error": result["error"]}, status=400)
+            
+        # Guardar en base de datos para futuras consultas rápidas
+        TariffRecommendationResult.objects.update_or_create(
+            home=home,
+            defaults={"data": result}
+        )
             
         return Response(result)
 
