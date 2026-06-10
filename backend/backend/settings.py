@@ -35,6 +35,15 @@ ALLOWED_HOSTS = os.environ.get(
     'testserver,127.0.0.1,localhost,tfg-energia-comunidad.onrender.com'
 ).split(',')
 
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'https://tfg-energia-comunidad.vercel.app'
+).split(',')
+
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://tfg-energia-comunidad.vercel.app,https://tfg-energia-comunidad.onrender.com'
+).split(',')
 
 # Application definition
 
