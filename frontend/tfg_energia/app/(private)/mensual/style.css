@@ -138,3 +138,7 @@
 .security-btn {
     background-color: var(--primary-dark);
 }
+
+.cost-value {
+    color: #2e7d32;
+}

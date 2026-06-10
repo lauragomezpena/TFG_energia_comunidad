@@ -54,6 +54,7 @@ class Alert(models.Model):
         ('HIGH_STANDBY', 'Consumo base elevado sostenido'),
         ('TARIFF_SAVING', 'Posible ahorro por cambio de tarifa'),
         ('HIGH_USAGE', 'Consumo semanal inusualmente alto'),
+        ('COMMUNITY_COMPARE', 'Comparativa con vecinos'),
     )
     
     SEVERITY_LEVELS = (

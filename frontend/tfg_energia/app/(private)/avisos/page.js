@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, CheckCircle, Info, Zap, Moon, BatteryWarning, TrendingDown, Clock, Check } from "lucide-react";
+import { AlertCircle, CheckCircle, Info, Zap, Moon, BatteryWarning, TrendingDown, Clock, Check, Users } from "lucide-react";
 import "../../globals.css";
 
 // Formateador de fechas
@@ -96,6 +96,7 @@ export default function AvisosPage() {
       case 'ANOMALOUS_PEAK': return <Zap size={24} color={color} />;
       case 'HIGH_STANDBY': return <BatteryWarning size={24} color={color} />;
       case 'TARIFF_SAVING': return <TrendingDown size={24} color={color} />;
+      case 'COMMUNITY_COMPARE': return <Users size={24} color={color} />;
       default: return <AlertCircle size={24} color={color} />;
     }
   };

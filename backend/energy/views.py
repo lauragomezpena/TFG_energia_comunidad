@@ -144,11 +144,11 @@ class UploadInvoiceView(APIView):
         if not file_obj:
             return Response({"error": "No se ha proporcionado ningún archivo."}, status=400)
 
-        # Validar tipo mime del archivo
+        # Validar tipo mime del archivo (solo PDF)
         content_type = file_obj.content_type
-        if content_type not in ['application/pdf', 'image/jpeg', 'image/png']:
+        if content_type != 'application/pdf':
             return Response({
-                "error": "Tipo de archivo no soportado. Debe ser un PDF o una imagen (JPEG/PNG)."
+                "error": "Tipo de archivo no soportado. Debe ser un archivo PDF digital."
             }, status=400)
 
         # Limitar tamaño (ej: 8 MB)

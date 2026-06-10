@@ -10,6 +10,7 @@ import "./style.css"; // Usa los estilos base de perfil u otros
 export default function MensualPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
   
   // Estados para el filtro de fechas
   const [startDate, setStartDate] = useState("");
@@ -75,7 +76,24 @@ export default function MensualPage() {
       }
     };
 
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/users/profile/", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const result = await res.json();
+          setProfile(result);
+        }
+      } catch (err) {
+        console.error("Error al obtener el perfil:", err);
+      }
+    };
+
     fetchData();
+    fetchProfile();
   }, [router]);
 
   // Lógica del filtro de fechas
@@ -129,6 +147,92 @@ export default function MensualPage() {
   const totalAgua = filteredData.reduce((acc, curr) => acc + curr.water_m3, 0).toFixed(2);
   const totalElectricidad = filteredData.reduce((acc, curr) => acc + curr.electricity_kwh, 0).toFixed(2);
 
+  const totalCoste = useMemo(() => {
+    if (filteredData.length === 0) return "0.00";
+
+    const tariffType = profile?.current_tariff_type || "PVPC";
+    const powerP1 = profile?.current_power_p1 !== undefined && profile?.current_power_p1 !== null ? Number(profile.current_power_p1) : 3.45;
+    const powerP2 = profile?.current_power_p2 !== undefined && profile?.current_power_p2 !== null ? Number(profile.current_power_p2) : 3.45;
+
+    const fixedPrice = profile?.current_tariff_fixed_price !== undefined && profile?.current_tariff_fixed_price !== null
+      ? Number(profile.current_tariff_fixed_price)
+      : 0.12;
+
+    const p1Price = profile?.current_tariff_p1_price !== undefined && profile?.current_tariff_p1_price !== null
+      ? Number(profile.current_tariff_p1_price)
+      : 0.18;
+    const p2Price = profile?.current_tariff_p2_price !== undefined && profile?.current_tariff_p2_price !== null
+      ? Number(profile.current_tariff_p2_price)
+      : 0.13;
+    const p3Price = profile?.current_tariff_p3_price !== undefined && profile?.current_tariff_p3_price !== null
+      ? Number(profile.current_tariff_p3_price)
+      : 0.09;
+
+    // Precios de suministro PVPC por defecto si no hay API en tiempo real
+    const pvpcP1 = 0.16;
+    const pvpcP2 = 0.11;
+    const pvpcP3 = 0.07;
+
+    // Término de energía regulado (peajes + cargos)
+    const regP1 = 0.097553;
+    const regP2 = 0.029267;
+    const regP3 = 0.003292;
+
+    let energyCost = 0;
+
+    filteredData.forEach(reading => {
+      const kwh = reading.electricity_kwh || 0;
+      const date = new Date(reading.timestamp);
+      
+      // Clasificación de periodos 2.0TD
+      let period = "P1";
+      const day = date.getDay(); // 0 = Domingo, 6 = Sábado
+      if (day === 0 || day === 6) {
+        period = "P3";
+      } else {
+        const hour = date.getHours();
+        if (hour >= 0 && hour < 8) {
+          period = "P3";
+        } else if ((hour >= 8 && hour < 10) || (hour >= 14 && hour < 18) || (hour >= 22 && hour < 24)) {
+          period = "P2";
+        } else {
+          period = "P1";
+        }
+      }
+
+      // 1) Peajes y cargos regulados
+      const regCost = kwh * (period === "P1" ? regP1 : period === "P2" ? regP2 : regP3);
+
+      // 2) Suministro libre o regulado
+      let supplyCost = 0;
+      if (tariffType === "FIXED") {
+        supplyCost = kwh * fixedPrice;
+      } else if (tariffType === "TOU") {
+        supplyCost = kwh * (period === "P1" ? p1Price : period === "P2" ? p2Price : p3Price);
+      } else {
+        // PVPC
+        supplyCost = kwh * (period === "P1" ? pvpcP1 : period === "P2" ? pvpcP2 : pvpcP3);
+      }
+
+      energyCost += regCost + supplyCost;
+    });
+
+    // Calcular días únicos representados en las lecturas
+    const uniqueDays = new Set(filteredData.map(d => new Date(d.timestamp_ms).toISOString().split('T')[0]));
+    const days = Math.max(uniqueDays.size, 1);
+
+    // Término de potencia
+    const p1Day = 27.704413 / 365.0;
+    const p2Day = 0.725423 / 365.0;
+    const powerCost = days * (powerP1 * p1Day + powerP2 * p2Day);
+
+    // Alquiler del contador
+    const meterRentalCost = days * 0.0266;
+
+    const total = energyCost + powerCost + meterRentalCost;
+    return total.toFixed(2);
+  }, [filteredData, profile]);
+
   return (
     <div className="container perfil-page">
       <header className="perfil-header" style={{ marginBottom: "1rem" }}>
@@ -137,7 +241,7 @@ export default function MensualPage() {
           <p className="perfil-subtitle">Filtra y explora los consumos en detalle</p>
         </div>
       </header>
-
+ 
       <DateFilter 
         startDate={startDate}
         endDate={endDate}
@@ -145,7 +249,7 @@ export default function MensualPage() {
         setEndDate={setEndDate}
         onQuickFilter={handleQuickFilter}
       />
-
+ 
       {loading ? (
         <div className="loading-message">Cargando datos...</div>
       ) : filteredData.length === 0 ? (
@@ -162,11 +266,18 @@ export default function MensualPage() {
                 {totalElectricidad} <span className="metric-unit">kWh</span>
               </p>
             </div>
-
+ 
             <div className="card">
               <h3 className="metric-label">Consumo de ACS Seleccionado</h3>
               <p className="metric-value water-value">
                 {totalAgua} <span className="metric-unit">m³</span>
+              </p>
+            </div>
+
+            <div className="card">
+              <h3 className="metric-label">Coste Estimado Seleccionado</h3>
+              <p className="metric-value cost-value">
+                {totalCoste} <span className="metric-unit">€</span>
               </p>
             </div>
           </div>

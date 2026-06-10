@@ -31,6 +31,7 @@ class AlertDetector:
         self.check_anomalous_peak()
         self.check_high_usage()
         self.check_tariff_saving()
+        self.check_community_comparison()
 
     def _get_readings_df(self, days: int) -> pd.DataFrame:
         """Helper para obtener lecturas en DataFrame en los últimos N días."""
@@ -271,3 +272,81 @@ class AlertDetector:
         except Exception as e:
             # Ignorar fallos del recomendador durante el worker
             pass
+
+    def check_community_comparison(self):
+        """
+        Alerta: Comparación con la media de los vecinos.
+        Compara el consumo diario medio de los últimos 30 días de la vivienda
+        con la media del resto de viviendas del edificio (excluyendo Zonas Comunes).
+        """
+        # 1. Rango de fechas (últimos 30 días)
+        start_date = self.now - datetime.timedelta(days=30)
+        
+        # 2. Consumo medio diario de esta vivienda
+        my_readings = Reading.objects.filter(home=self.home, timestamp__gte=start_date)
+        if not my_readings.exists():
+            return
+            
+        my_total = sum(r.electricity_kwh for r in my_readings)
+        unique_days_my = len(set(r.timestamp.date() for r in my_readings))
+        if unique_days_my < 1:
+            unique_days_my = 1
+        my_avg = my_total / unique_days_my
+
+        # 3. Consumo medio diario del resto de viviendas
+        other_homes = Home.objects.exclude(id=self.home.id).exclude(name="Zonas Comunes")
+        if not other_homes.exists():
+            return
+
+        neighbor_averages = []
+        for oh in other_homes:
+            oh_readings = Reading.objects.filter(home=oh, timestamp__gte=start_date)
+            if oh_readings.exists():
+                oh_total = sum(r.electricity_kwh for r in oh_readings)
+                oh_days = len(set(r.timestamp.date() for r in oh_readings))
+                if oh_days > 0:
+                    neighbor_averages.append(oh_total / oh_days)
+
+        if not neighbor_averages:
+            return
+
+        neighbor_avg = sum(neighbor_averages) / len(neighbor_averages)
+        if neighbor_avg == 0:
+            return
+
+        # Diferencia porcentual
+        diff_ratio = (my_avg - neighbor_avg) / neighbor_avg
+
+        # Crear o actualizar alerta
+        alert_type = 'COMMUNITY_COMPARE'
+        
+        if diff_ratio > 0.05:
+            severity = 'MEDIUM'
+            title = 'Consumo superior a la media de vecinos'
+            percent_more = diff_ratio * 100
+            message = (
+                f'Durante los últimos 30 días, tu consumo diario medio ha sido de {my_avg:.2f} kWh/día, '
+                f'lo cual es un {percent_more:.0f}% superior a la media de tus vecinos ({neighbor_avg:.2f} kWh/día). '
+                'Revisa tus hábitos de consumo o electrodomésticos encendidos para mejorar tu eficiencia.'
+            )
+        else:
+            severity = 'LOW'
+            title = 'Consumo inferior a la media de vecinos'
+            percent_less = abs(diff_ratio) * 100
+            message = (
+                f'Durante los últimos 30 días, tu consumo diario medio ha sido de {my_avg:.2f} kWh/día, '
+                f'un {percent_less:.0f}% menor que la media de tus vecinos ({neighbor_avg:.2f} kWh/día). '
+                '¡Excelente trabajo manteniendo tu eficiencia energética en la comunidad!'
+            )
+
+        self._update_or_create_alert(
+            alert_type=alert_type,
+            severity=severity,
+            title=title,
+            message=message,
+            start_period=start_date,
+            end_period=self.now,
+            observed_value=my_avg,
+            reference_value=neighbor_avg,
+            metadata={"neighbor_avg": neighbor_avg, "my_avg": my_avg, "diff_ratio": diff_ratio}
+        )

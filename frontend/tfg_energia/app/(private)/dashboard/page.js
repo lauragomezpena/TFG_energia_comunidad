@@ -19,6 +19,7 @@ export default function DashboardPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [chartReady, setChartReady] = useState(false);
+  const [recommendation, setRecommendation] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -63,6 +64,16 @@ export default function DashboardPage() {
           fecha_corta: new Date(d.timestamp).toLocaleDateString(),
           timestamp_ms: new Date(d.timestamp).getTime()
         })).sort((a, b) => a.timestamp_ms - b.timestamp_ms);
+
+        const resRec = await fetch("http://127.0.0.1:8000/energy/recommend-tariff/", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (resRec.ok) {
+          const recResult = await resRec.json();
+          setRecommendation(recResult);
+        }
 
         setData(formattedData);
         setLoading(false);
@@ -122,10 +133,22 @@ export default function DashboardPage() {
             </div>
 
             <div className="card">
-              <h3 className="kpi-label">Est. Coste Acumulado</h3>
-              <p className="kpi-value cost-value">
-                0.00 <span className="kpi-unit">€</span>
-              </p>
+              <h3 className="kpi-label">Coste Medio (Tarifa Óptima)</h3>
+              {recommendation && recommendation.rankings && recommendation.rankings.length > 0 ? (
+                <>
+                  <p className="kpi-value cost-value" style={{ color: "#2e7d32" }}>
+                    {(recommendation.rankings[0].coste_anual_estimado_eur / 12).toFixed(2)}{" "}
+                    <span className="kpi-unit">€/mes</span>
+                  </p>
+                  <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginTop: "4px" }}>
+                    Equivale a {(recommendation.rankings[0].coste_anual_estimado_eur / 365).toFixed(2)} €/día
+                  </span>
+                </>
+              ) : (
+                <p className="kpi-value cost-value">
+                  — <span className="kpi-unit">€/mes</span>
+                </p>
+              )}
             </div>
           </div>
 

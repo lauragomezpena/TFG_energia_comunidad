@@ -342,13 +342,13 @@ export default function PerfilPage() {
                 <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>📄</div>
                 <h4 style={{ margin: "0 0 0.25rem 0", color: "var(--primary-dark)", fontSize: "1rem" }}>Cargar factura de luz</h4>
                 <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0 0 1rem 0" }}>
-                  Sube tu factura en PDF o imagen para rellenar los datos automáticamente con IA.
+                  Sube tu factura en formato PDF para rellenar los datos automáticamente con IA.
                 </p>
                 
                 <input
                   type="file"
                   id="invoice-upload"
-                  accept="application/pdf,image/jpeg,image/png"
+                  accept="application/pdf"
                   onChange={handleUploadInvoice}
                   style={{ display: "none" }}
                   disabled={uploading}

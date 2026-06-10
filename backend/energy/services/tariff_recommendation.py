@@ -399,6 +399,24 @@ def generate_recommendation(home_id: int):
                 "detalle_anual_penalizaciones_eur": round(annualize(penalty_cost, days), 2),
             })
 
+    # Añadimos la tarifa actual real del usuario (con sus precios del perfil y potencias actuales reales)
+    # al listado de resultados (ranking) para que compita directamente como una única opción.
+    results.append({
+        "tarifa": "Tu Tarifa Actual",
+        "tipo": owner.current_tariff_type,
+        "potencia_p1_kw": owner.current_power_p1,
+        "potencia_p2_kw": owner.current_power_p2,
+
+        "coste_ventana_eur": round(current_total_window, 2),
+        "coste_anual_estimado_eur": round(current_annual_cost, 2),
+
+        "detalle_anual_potencia_eur": round(annualize(current_power_cost, days), 2),
+        "detalle_anual_regulados_energia_eur": round(annualize(regulated_energy_cost, days), 2),
+        "detalle_anual_energia_suministro_eur": round(annualize(current_supply_cost, days), 2),
+        "detalle_anual_alquiler_contador_eur": round(annualize(meter_rental_cost, days), 2),
+        "detalle_anual_penalizaciones_eur": round(annualize(current_penalty_cost, days), 2),
+    })
+
     results.sort(key=lambda x: x["coste_anual_estimado_eur"])
     best_tariff = results[0]
 
