@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
+import numpy as np
 import requests
 
 from energy.models import Reading, Home
@@ -167,7 +168,7 @@ def download_ree_hourly_prices(start_date: datetime.datetime, end_date: datetime
     }
 
     try:
-        r = requests.get(base, params=params, timeout=15)
+        r = requests.get(base, params=params, timeout=4)
         if not r.ok:
             return pd.DataFrame()
 
@@ -200,17 +201,14 @@ def compute_power_cost(days: float, contracted_kw_p1: float, contracted_kw_p2: f
     return days * (contracted_kw_p1 * p1_day + contracted_kw_p2 * p2_day)
 
 
-def compute_regulated_energy_cost(cons_kwh: pd.Series) -> float:
-    df = cons_kwh.to_frame("kwh")
-    df["period"] = [energy_period_20td(ts.to_pydatetime()) for ts in df.index]
-
+def compute_regulated_energy_cost(df: pd.DataFrame) -> float:
     total = 0.0
-    for period, grp in df.groupby("period"):
-        total += float(grp["kwh"].sum()) * REGULATED_ENERGY_EUR_PER_KWH[period]
+    for period, price in REGULATED_ENERGY_EUR_PER_KWH.items():
+        total += float(df.loc[df["energy_period"] == period, "kwh"].sum()) * price
     return total
 
 
-def compute_excess_penalty(cons_kwh: pd.Series, contracted_kw_p1: float, contracted_kw_p2: float) -> float:
+def compute_excess_penalty(df: pd.DataFrame, contracted_kw_p1: float, contracted_kw_p2: float) -> float:
     """
     Aproximación:
     Tomamos el kWh horario como kW medio en esa hora.
@@ -219,47 +217,34 @@ def compute_excess_penalty(cons_kwh: pd.Series, contracted_kw_p1: float, contrac
     if not INCLUDE_EXCESS_PENALTY:
         return 0.0
 
-    df = cons_kwh.to_frame("kw")
-    df["period"] = [power_period_20td(ts.to_pydatetime()) for ts in df.index]
-
-    total_penalty = 0.0
-
-    for _, row in df.iterrows():
-        period = row["period"]
-        contracted = contracted_kw_p1 if period == "P1" else contracted_kw_p2
-
-        if row["kw"] > contracted:
-            excess_kw = row["kw"] - contracted
-            total_penalty += excess_kw * EXCESS_PRICE_EUR_PER_KW_DAY[period]
-
-    return total_penalty
+    limit = np.where(df["power_period"] == "P1", contracted_kw_p1, contracted_kw_p2)
+    excess = (df["kwh"] - limit).clip(lower=0)
+    price = np.where(df["power_period"] == "P1", EXCESS_PRICE_EUR_PER_KW_DAY["P1"], EXCESS_PRICE_EUR_PER_KW_DAY["P2"])
+    return float((excess * price).sum())
 
 
 def compute_energy_supply_cost(
     tariff: Tariff,
-    cons_kwh: pd.Series,
+    df: pd.DataFrame,
     prices_df: pd.DataFrame,
 ) -> float:
 
     if tariff.kind == "PVPC":
         if prices_df.empty:
             # fallback si falla API
-            return float(cons_kwh.sum()) * 0.10
+            return float(df["kwh"].sum()) * 0.10
 
-        aligned = pd.concat([cons_kwh, prices_df["eur_per_kwh"]], axis=1).dropna()
+        aligned = pd.concat([df["kwh"], prices_df["eur_per_kwh"]], axis=1).dropna()
         aligned.columns = ["kwh", "eur_per_kwh"]
         return float((aligned["kwh"] * aligned["eur_per_kwh"]).sum())
 
     if tariff.kind == "FIXED":
-        return float(cons_kwh.sum()) * float(tariff.fixed_energy_eur_per_kwh)
+        return float(df["kwh"].sum()) * float(tariff.fixed_energy_eur_per_kwh)
 
     if tariff.kind == "TOU":
-        df = cons_kwh.to_frame("kwh")
-        df["period"] = [energy_period_20td(ts.to_pydatetime()) for ts in df.index]
-
         total = 0.0
-        for period, grp in df.groupby("period"):
-            total += float(grp["kwh"].sum()) * tariff.tou_prices_eur_per_kwh[period]
+        for period, price in tariff.tou_prices_eur_per_kwh.items():
+            total += float(df.loc[df["energy_period"] == period, "kwh"].sum()) * price
         return total
 
     raise ValueError(f"Tipo de tarifa no soportado: {tariff.kind}")
@@ -313,8 +298,12 @@ def generate_recommendation(home_id: int):
         end_dt.to_pydatetime(),
     )
 
+    # Pre-calcular periodos una sola vez para evitar recálculos en bucles
+    df_readings["power_period"] = [power_period_20td(ts.to_pydatetime()) for ts in df_readings.index]
+    df_readings["energy_period"] = [energy_period_20td(ts.to_pydatetime()) for ts in df_readings.index]
+
     meter_rental_cost = days * METER_RENTAL_EUR_PER_DAY
-    regulated_energy_cost = compute_regulated_energy_cost(df_readings["kwh"])
+    regulated_energy_cost = compute_regulated_energy_cost(df_readings)
 
     # Calcular la tarifa actual del usuario
     current_tariff_obj = Tariff(
@@ -330,13 +319,13 @@ def generate_recommendation(home_id: int):
 
     current_power_cost = compute_power_cost(days, owner.current_power_p1, owner.current_power_p2)
     current_penalty_cost = compute_excess_penalty(
-        cons_kwh=df_readings["kwh"],
+        df=df_readings,
         contracted_kw_p1=owner.current_power_p1,
         contracted_kw_p2=owner.current_power_p2,
     )
     current_supply_cost = compute_energy_supply_cost(
         tariff=current_tariff_obj,
-        cons_kwh=df_readings["kwh"],
+        df=df_readings,
         prices_df=prices_df,
     )
     current_total_window = (
@@ -364,14 +353,14 @@ def generate_recommendation(home_id: int):
             power_cost = compute_power_cost(days, contracted_kw_p1, contracted_kw_p2)
 
             penalty_cost = compute_excess_penalty(
-                cons_kwh=df_readings["kwh"],
+                df=df_readings,
                 contracted_kw_p1=contracted_kw_p1,
                 contracted_kw_p2=contracted_kw_p2,
             )
 
             supply_cost = compute_energy_supply_cost(
                 tariff=tariff,
-                cons_kwh=df_readings["kwh"],
+                df=df_readings,
                 prices_df=prices_df,
             )
 
@@ -429,8 +418,7 @@ def generate_recommendation(home_id: int):
                 is_already_optimal = True
 
     # 1. Determinar porcentaje de consumo en periodo valle (P3)
-    df_readings["period"] = [energy_period_20td(ts.to_pydatetime()) for ts in df_readings.index]
-    p3_kwh = float(df_readings[df_readings["period"] == "P3"]["kwh"].sum())
+    p3_kwh = float(df_readings[df_readings["energy_period"] == "P3"]["kwh"].sum())
     p3_pct = p3_kwh / total_kwh if total_kwh > 0 else 0.0
 
     explanations = []

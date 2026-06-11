@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from django.utils import timezone
-from energy.models import Reading, PredictionResult
+from energy.models import Reading, PredictionResult, TariffRecommendationResult
 from energy.services.tariff_recommendation import generate_recommendation
 
 # Ruta al modelo pre-entrenado
@@ -163,7 +163,18 @@ def generate_forecast(home_id: int) -> dict:
     estimated_cost_eur = None
     recommended_tariff_name = None
     
-    rec_result = generate_recommendation(home_id)
+    # Intentar obtener recomendación desde la caché en base de datos
+    cached_rec = TariffRecommendationResult.objects.filter(home_id=home_id).first()
+    if cached_rec:
+        rec_result = cached_rec.data
+    else:
+        rec_result = generate_recommendation(home_id)
+        if "error" not in rec_result:
+            TariffRecommendationResult.objects.update_or_create(
+                home_id=home_id,
+                defaults={"data": rec_result}
+            )
+            
     if "error" not in rec_result and rec_result.get("rankings"):
         best_tariff = rec_result["rankings"][0]
         recommended_tariff_name = best_tariff["tarifa"]
