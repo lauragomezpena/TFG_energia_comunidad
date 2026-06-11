@@ -106,17 +106,24 @@ class UpdateEmailView(generics.UpdateAPIView):
         </div>
         """
         
-        try:
-            send_mail(
-                subject,
-                message,
-                settings.EMAIL_HOST_USER,
-                [user.email],
-                fail_silently=False,
-                html_message=html_message
-            )
-        except Exception as e:
-            print(f"Error enviando correo a {user.email}: {e}")
+        # Enviar el correo en un hilo en segundo plano (asíncrono) para evitar
+        # bloquear el servidor si los servidores de SMTP no están configurados o tardan en responder.
+        import threading
+        
+        def send_email_async():
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=False,
+                    html_message=html_message
+                )
+            except Exception as e:
+                print(f"Error enviando correo a {user.email}: {e}")
+                
+        threading.Thread(target=send_email_async).start()
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
