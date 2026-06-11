@@ -37,9 +37,9 @@ class ReadingListView(generics.ListAPIView):
         # Filtering by user's homes + Zonas Comunes
         from django.db.models import Q
         if user.role == 'admin':
-            queryset = Reading.objects.all()
+            queryset = Reading.objects.select_related('home').all()
         else:
-            queryset = Reading.objects.filter(Q(home__owner=user) | Q(home__name="Zonas Comunes"))
+            queryset = Reading.objects.select_related('home').filter(Q(home__owner=user) | Q(home__name="Zonas Comunes"))
         
         # Opcional: Filtrar por casa si viene en query params ("?home_id=X")
         home_id = self.request.query_params.get('home_id')
@@ -120,7 +120,7 @@ class AlertListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Alert.objects.filter(home__owner=user)
+        queryset = Alert.objects.select_related('home').filter(home__owner=user)
         
         home_id = self.request.query_params.get('home_id')
         if home_id:
@@ -143,7 +143,7 @@ class AlertDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Alert.objects.filter(home__owner=self.request.user)
+        return Alert.objects.select_related('home').filter(home__owner=self.request.user)
 
 
 from rest_framework.parsers import MultiPartParser, FormParser
