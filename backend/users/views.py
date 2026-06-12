@@ -109,8 +109,37 @@ class UpdateEmailView(generics.UpdateAPIView):
         # Enviar el correo en un hilo en segundo plano (asíncrono) para evitar
         # bloquear el servidor si los servidores de SMTP no están configurados o tardan en responder.
         import threading
+        import os
+        import requests
         
         def send_email_async():
+            # Intentar usar la API HTTP de Resend si está configurada (evita bloqueo de puertos SMTP en Render Gratis)
+            resend_key = os.environ.get("RESEND_API_KEY")
+            if resend_key:
+                try:
+                    res = requests.post(
+                        "https://api.resend.com/emails",
+                        headers={
+                            "Authorization": f"Bearer {resend_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "from": "onboarding@resend.dev",
+                            "to": user.email,
+                            "subject": subject,
+                            "html": html_message
+                        },
+                        timeout=8
+                    )
+                    if res.status_code in [200, 201]:
+                        print(f"Correo enviado exitosamente a {user.email} mediante Resend API.")
+                        return
+                    else:
+                        print(f"Resend API devolvió error al enviar correo: {res.text}")
+                except Exception as e:
+                    print(f"Error conectando con la API de Resend: {e}")
+
+            # Fallback al envío SMTP tradicional de Django (útil para desarrollo local)
             try:
                 send_mail(
                     subject,
@@ -120,8 +149,9 @@ class UpdateEmailView(generics.UpdateAPIView):
                     fail_silently=False,
                     html_message=html_message
                 )
+                print(f"Correo enviado exitosamente a {user.email} mediante SMTP.")
             except Exception as e:
-                print(f"Error enviando correo a {user.email}: {e}")
+                print(f"Error enviando correo SMTP a {user.email}: {e}")
                 
         threading.Thread(target=send_email_async).start()
 
