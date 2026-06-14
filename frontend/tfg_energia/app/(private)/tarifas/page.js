@@ -170,9 +170,9 @@ export default function TariffsPage() {
           background:
             "linear-gradient(135deg, var(--primary-blue) 0%, rgba(30,136,229,0.8) 100%)",
           color: "white",
-          padding: "1.25rem",
-          borderRadius: "16px",
-          boxShadow: "0 10px 30px rgba(30,136,229,0.3)",
+          padding: "1rem",
+          borderRadius: "14px",
+          boxShadow: "0 8px 25px rgba(30,136,229,0.25)",
           position: "relative",
           overflow: "hidden",
           marginBottom: "1.25rem",
@@ -186,22 +186,22 @@ export default function TariffsPage() {
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: "2rem",
+            gap: "1.25rem",
           }}
         >
-          <div style={{ flex: "1 1 340px" }}>
+          <div style={{ flex: "1 1 300px" }}>
             {data.is_already_optimal ? (
               <span
                 style={{
                   background: "#2e7d32",
                   color: "white",
-                  padding: "6px 12px",
+                  padding: "4px 10px",
                   borderRadius: "20px",
-                  fontSize: "0.85rem",
+                  fontSize: "0.8rem",
                   textTransform: "uppercase",
-                  letterSpacing: "1px",
+                  letterSpacing: "0.5px",
                   fontWeight: "bold",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
                 }}
               >
                 ✅ Ya tienes la tarifa óptima
@@ -210,11 +210,11 @@ export default function TariffsPage() {
               <span
                 style={{
                   background: "rgba(255,255,255,0.2)",
-                  padding: "6px 12px",
+                  padding: "4px 10px",
                   borderRadius: "20px",
-                  fontSize: "0.85rem",
+                  fontSize: "0.8rem",
                   textTransform: "uppercase",
-                  letterSpacing: "1px",
+                  letterSpacing: "0.5px",
                   fontWeight: "bold",
                 }}
               >
@@ -224,15 +224,15 @@ export default function TariffsPage() {
 
             <h2
               style={{
-                fontSize: "2.2rem",
-                marginTop: "1rem",
-                marginBottom: "0.5rem",
+                fontSize: "1.75rem",
+                marginTop: "0.5rem",
+                marginBottom: "0.3rem",
               }}
             >
               {bestTariff.tarifa}
             </h2>
 
-            <p style={{ fontSize: "1.05rem", opacity: 0.92, marginBottom: "1rem" }}>
+            <p style={{ fontSize: "0.92rem", opacity: 0.92, marginBottom: "0.75rem", lineHeight: "1.4" }}>
               {data.is_already_optimal ? (
                 <>
                   ¡Excelente! Tu tarifa actual y potencias contratadas coinciden con la opción más eficiente según tu patrón de consumo real. <strong>No necesitas realizar ningún cambio.</strong>
@@ -250,15 +250,16 @@ export default function TariffsPage() {
               style={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: "0.75rem",
-                marginTop: "0.75rem",
+                gap: "0.5rem",
+                marginTop: "0.5rem",
               }}
             >
               <span
                 style={{
                   background: "rgba(255,255,255,0.16)",
-                  padding: "8px 12px",
-                  borderRadius: "12px",
+                  padding: "6px 10px",
+                  borderRadius: "10px",
+                  fontSize: "0.85rem",
                   fontWeight: "600",
                 }}
               >
@@ -267,8 +268,9 @@ export default function TariffsPage() {
               <span
                 style={{
                   background: "rgba(255,255,255,0.16)",
-                  padding: "8px 12px",
-                  borderRadius: "12px",
+                  padding: "6px 10px",
+                  borderRadius: "10px",
+                  fontSize: "0.85rem",
                   fontWeight: "600",
                 }}
               >
@@ -277,8 +279,9 @@ export default function TariffsPage() {
               <span
                 style={{
                   background: "rgba(255,255,255,0.16)",
-                  padding: "8px 12px",
-                  borderRadius: "12px",
+                  padding: "6px 10px",
+                  borderRadius: "10px",
+                  fontSize: "0.85rem",
                   fontWeight: "600",
                 }}
               >
@@ -291,16 +294,16 @@ export default function TariffsPage() {
             style={{
               background: "white",
               color: "var(--primary-blue)",
-              padding: "2rem",
-              borderRadius: "16px",
+              padding: "1.25rem",
+              borderRadius: "12px",
               textAlign: "center",
-              flex: "0 1 280px",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+              flex: "0 1 240px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
           >
             <div
               style={{
-                fontSize: "1.05rem",
+                fontSize: "0.85rem",
                 color: "var(--text-muted)",
                 fontWeight: "bold",
               }}
@@ -309,14 +312,14 @@ export default function TariffsPage() {
             </div>
             <div
               style={{
-                fontSize: "3rem",
+                fontSize: "2.2rem",
                 fontWeight: "900",
-                margin: "10px 0",
+                margin: "6px 0",
                 color: data.is_already_optimal ? "#2e7d32" : "#1e88e5",
               }}
             >
               {bestTariff.coste_anual_estimado_eur}{" "}
-              <span style={{ fontSize: "1.5rem" }}>€/año</span>
+              <span style={{ fontSize: "1.1rem" }}>€/año</span>
             </div>
 
             {data.is_already_optimal ? (
