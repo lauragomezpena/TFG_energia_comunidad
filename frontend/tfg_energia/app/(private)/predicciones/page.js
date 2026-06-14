@@ -55,8 +55,14 @@ export default function PrediccionesPage() {
     if (!home) return;
     
     let isMounted = true;
-    setLoading(true);
-    setErrorMsg("");
+    
+    // Defer state updates to avoid synchronous setState warning inside useEffect
+    setTimeout(() => {
+      if (isMounted) {
+        setLoading(true);
+        setErrorMsg("");
+      }
+    }, 0);
 
     const token = localStorage.getItem("access_token");
     
@@ -108,7 +114,14 @@ export default function PrediccionesPage() {
       {/* ── Header ── */}
       <header className="perfil-header" style={{ marginBottom: "1rem" }}>
         <div>
-          <h1 className="perfil-title">Predicción de Consumo</h1>
+          <h1 className="perfil-title" style={{ display: "flex", alignItems: "baseline", gap: "10px", flexWrap: "wrap" }}>
+            Predicción de Consumo
+            {forecast && (
+              <span style={{ fontSize: "1.1rem", fontWeight: "normal", color: "var(--text-muted)" }}>
+                — Consumo horario predicho — {formatDateLong(forecast.forecast_start)} → {formatDateLong(forecast.forecast_end)}
+              </span>
+            )}
+          </h1>
           <p className="perfil-subtitle">
             Proyección IA de los próximos <strong>30 días (hora a hora)</strong> generada con el modelo XGBoost entrenado con tu historial
           </p>
@@ -152,41 +165,35 @@ export default function PrediccionesPage() {
       {/* ── Resultados ── */}
       {forecast && !loading && (
         <>
-          {/* KPI Cards - Forzadas a 2x2 */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem", marginBottom: "2rem" }}>
-            <div className="card">
+          {/* KPI Cards - En una sola fila */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "3.5rem" }}>
+            <div className="card" style={{ padding: "1rem" }}>
               <h3 className="metric-label">Total Predicho (30 días)</h3>
-              <p className="metric-value electricity-value">
+              <p className="metric-value electricity-value" style={{ fontSize: "1.65rem", margin: "4px 0" }}>
                 {forecast.total_predicted_kwh} <span className="metric-unit">kWh</span>
               </p>
             </div>
-            <div className="card">
+            <div className="card" style={{ padding: "1rem" }}>
               <h3 className="metric-label">Media Diaria Estimada</h3>
-              <p className="metric-value electricity-value">
+              <p className="metric-value electricity-value" style={{ fontSize: "1.65rem", margin: "4px 0" }}>
                 {(forecast.total_predicted_kwh / (forecast.hourly.length / 24)).toFixed(2)}{" "}
                 <span className="metric-unit">kWh/día</span>
               </p>
             </div>
-            <div className="card" style={{ background: "linear-gradient(135deg, rgba(30,136,229,0.05), rgba(30,136,229,0.15))", border: "1px solid var(--primary-blue)" }}>
-              <h3 className="metric-label">Tarifa Recomendada</h3>
-              <p className="metric-value" style={{ fontSize: "1.1rem", color: "var(--text-color)" }}>
-                {forecast.recommended_tariff || "No calculable"}
-              </p>
-            </div>
-            <div className="card" style={{ background: "linear-gradient(135deg, rgba(30,136,229,0.05), rgba(30,136,229,0.15))", border: "1px solid var(--primary-blue)" }}>
-              <h3 className="metric-label">Factura Estimada</h3>
-              <p className="metric-value" style={{ color: "var(--primary-blue)", fontSize: "1.8rem" }}>
+            <div className="card" style={{ background: "linear-gradient(135deg, rgba(30,136,229,0.05), rgba(30,136,229,0.15))", border: "1px solid var(--primary-blue)", padding: "1rem" }}>
+              <h3 className="metric-label">Factura Estimada (según tarifa recomendada)</h3>
+              <p className="metric-value" style={{ color: "var(--primary-blue)", fontSize: "1.65rem", margin: "4px 0" }}>
                 {forecast.estimated_cost_eur ? `${forecast.estimated_cost_eur} €` : "—"}
               </p>
             </div>
           </div>
 
-          {/* Gráfica Horaria Completa */}
-          <div className="card" style={{ width: "100%", minHeight: "450px" }}>
-            <h2 className="section-title">
-              Consumo horario predicho — {formatDateLong(forecast.forecast_start)} → {formatDateLong(forecast.forecast_end)}
+          {/* Gráfica Horaria Completa - Sin borde negro y compacta */}
+          <div className="card" style={{ width: "100%", minHeight: "280px", border: "none", boxShadow: "none", padding: "0" }}>
+            <h2 className="section-title" style={{ marginBottom: "0.5rem", fontSize: "1.15rem" }}>
+              Gráfica de evolución horaria
             </h2>
-            <div style={{ width: "100%", height: "450px" }}>
+            <div style={{ width: "100%", height: "280px" }}>
               <ResponsiveContainer width="99%" height="100%">
                 <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />

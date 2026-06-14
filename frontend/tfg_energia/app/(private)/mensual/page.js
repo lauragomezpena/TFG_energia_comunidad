@@ -283,9 +283,9 @@ export default function MensualPage() {
             </div>
           </div>
 
-          <div className="card" style={{ width: '100%', minHeight: '350px' }}>
+          <div className="card" style={{ width: '100%', minHeight: '280px' }}>
             <h2 className="section-title">Evolución en el periodo</h2>
-            <div style={{ width: '100%', height: '350px' }}>
+            <div style={{ width: '100%', height: '280px' }}>
               <ResponsiveContainer width="99%" height="100%">
                 <LineChart data={filteredData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />

@@ -140,23 +140,23 @@ export default function TariffsPage() {
 
   return (
     <div className="container tarifas-page">
-      <header className="tarifas-header" style={{ marginBottom: "2rem" }}>
+      <header className="tarifas-header" style={{ marginBottom: "1rem" }}>
         <div>
           <h1
             className="tarifas-title"
-            style={{ fontSize: "2rem", color: "var(--primary-blue)" }}
+            style={{ fontSize: "1.65rem", color: "var(--primary-blue)" }}
           >
             Asesor de Tarifas
           </h1>
           <p
             className="tarifas-subtitle"
-            style={{ color: "var(--text-muted)" }}
+            style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}
           >
             Recomendación basada en el historial de {data.days_analyzed} días de{" "}
             <strong>{data.homeName}</strong>. (Total cons: {data.total_kwh} kWh).
           </p>
           {data.n_combinations ? (
-            <p style={{ color: "var(--text-muted)", marginTop: "0.4rem" }}>
+            <p style={{ color: "var(--text-muted)", marginTop: "0.4rem", fontSize: "0.85rem" }}>
               Se han analizado <strong>{data.n_combinations}</strong>{" "}
               combinaciones de tarifa y potencia contratada.
             </p>
@@ -170,12 +170,12 @@ export default function TariffsPage() {
           background:
             "linear-gradient(135deg, var(--primary-blue) 0%, rgba(30,136,229,0.8) 100%)",
           color: "white",
-          padding: "2rem",
+          padding: "1.25rem",
           borderRadius: "16px",
           boxShadow: "0 10px 30px rgba(30,136,229,0.3)",
           position: "relative",
           overflow: "hidden",
-          marginBottom: "2.5rem",
+          marginBottom: "1.25rem",
         }}
       >
         <div
@@ -368,17 +368,17 @@ export default function TariffsPage() {
         <div
           className="card"
           style={{
-            marginBottom: "2.5rem",
+            marginBottom: "1.25rem",
             background: "var(--card-bg)",
             border: "1px solid var(--border-color)",
-            padding: "2rem",
+            padding: "1.25rem",
           }}
         >
           <h3
             style={{
-              fontSize: "1.4rem",
+              fontSize: "1.25rem",
               color: "var(--primary-blue)",
-              marginBottom: "1.5rem",
+              marginBottom: "0.75rem",
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
@@ -473,20 +473,20 @@ export default function TariffsPage() {
         </div>
       )}
 
-      <h3 style={{ marginBottom: "1rem", color: "var(--text-color)" }}>
+      <h3 style={{ marginBottom: "0.5rem", color: "var(--text-color)" }}>
         Configuración recomendada
       </h3>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "1.5rem",
-          marginBottom: "3rem",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "1rem",
+          marginBottom: "1.5rem",
         }}
       >
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>📄</div>
-          <h4 style={{ margin: "10px 0" }}>Tarifa</h4>
+          <h4 style={{ margin: "5px 0" }}>Tarifa</h4>
           <p
             style={{
               fontSize: "1.1rem",
@@ -498,9 +498,9 @@ export default function TariffsPage() {
           </p>
         </div>
 
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>🔌</div>
-          <h4 style={{ margin: "10px 0" }}>Potencia contratada P1</h4>
+          <h4 style={{ margin: "5px 0" }}>Potencia contratada P1</h4>
           <p
             style={{
               fontSize: "1.2rem",
@@ -512,9 +512,9 @@ export default function TariffsPage() {
           </p>
         </div>
 
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>🌙</div>
-          <h4 style={{ margin: "10px 0" }}>Potencia contratada P2</h4>
+          <h4 style={{ margin: "5px 0" }}>Potencia contratada P2</h4>
           <p
             style={{
               fontSize: "1.2rem",
@@ -526,9 +526,9 @@ export default function TariffsPage() {
           </p>
         </div>
 
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>🏷️</div>
-          <h4 style={{ margin: "10px 0" }}>Tipo</h4>
+          <h4 style={{ margin: "5px 0" }}>Tipo</h4>
           <p
             style={{
               fontSize: "1.2rem",
@@ -541,20 +541,20 @@ export default function TariffsPage() {
         </div>
       </div>
 
-      <h3 style={{ marginBottom: "1rem", color: "var(--text-color)" }}>
+      <h3 style={{ marginBottom: "0.5rem", color: "var(--text-color)" }}>
         Desglose de Facturación (Anualizado)
       </h3>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "1.5rem",
-          marginBottom: "3rem",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "1rem",
+          marginBottom: "1.5rem",
         }}
       >
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>🔋</div>
-          <h4 style={{ margin: "10px 0" }}>Término de Potencia</h4>
+          <h4 style={{ margin: "5px 0" }}>Término de Potencia</h4>
           <p
             style={{
               fontSize: "1.2rem",
@@ -566,9 +566,9 @@ export default function TariffsPage() {
           </p>
         </div>
 
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>⚡</div>
-          <h4 style={{ margin: "10px 0" }}>Peajes y Cargos Energía</h4>
+          <h4 style={{ margin: "5px 0" }}>Peajes y Cargos Energía</h4>
           <p
             style={{
               fontSize: "1.2rem",
@@ -580,9 +580,9 @@ export default function TariffsPage() {
           </p>
         </div>
 
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>💶</div>
-          <h4 style={{ margin: "10px 0" }}>Suministro de Energía</h4>
+          <h4 style={{ margin: "5px 0" }}>Suministro de Energía</h4>
           <p
             style={{
               fontSize: "1.2rem",
@@ -594,9 +594,9 @@ export default function TariffsPage() {
           </p>
         </div>
 
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>⚠️</div>
-          <h4 style={{ margin: "10px 0" }}>Excesos de Potencia</h4>
+          <h4 style={{ margin: "5px 0" }}>Excesos de Potencia</h4>
           <p
             style={{
               fontSize: "1.2rem",
@@ -611,9 +611,9 @@ export default function TariffsPage() {
           </p>
         </div>
 
-        <div className="card" style={{ textAlign: "center" }}>
+        <div className="card" style={{ textAlign: "center", padding: "1rem" }}>
           <div style={{ fontSize: "1.5rem" }}>⏱️</div>
-          <h4 style={{ margin: "10px 0" }}>Alquiler Contador</h4>
+          <h4 style={{ margin: "5px 0" }}>Alquiler Contador</h4>
           <p
             style={{
               fontSize: "1.2rem",

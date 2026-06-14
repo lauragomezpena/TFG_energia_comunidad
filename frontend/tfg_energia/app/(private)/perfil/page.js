@@ -599,7 +599,7 @@ export default function PerfilPage() {
 
                 <button
                   type="submit"
-                  className="btn-primary security-btn"
+                  className="btn-primary"
                 >
                   Actualizar Seguridad
                 </button>
