@@ -61,7 +61,7 @@ class AlertDetector:
             alert.save()
         else:
             # Creamos una nueva
-            Alert.objects.create(
+            new_alert = Alert.objects.create(
                 home=self.home,
                 alert_type=alert_type,
                 severity=severity,
@@ -73,10 +73,89 @@ class AlertDetector:
                 reference_value=reference_value,
                 metadata=metadata or {}
             )
+            self._send_alert_email(new_alert)
 
     def _resolve_alert(self, alert_type):
         """Si la anomalía ya no existe, marcamos la alerta activa como resuelta."""
         Alert.objects.filter(home=self.home, alert_type=alert_type, status='ACTIVE').update(status='RESOLVED')
+
+    def _send_alert_email(self, alert):
+        """Envía una notificación por correo electrónico de manera asíncrona cuando se crea una nueva alerta."""
+        import threading
+        import os
+        import requests
+        from django.core.mail import send_mail
+        from django.conf import settings
+
+        user = self.home.owner
+        if not user or not user.email:
+            return
+
+        subject = f"[E-Community Alerta] {alert.title}"
+        
+        html_message = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span style="font-size: 40px;">⚠️</span>
+            </div>
+            <h2 style="color: #0f172a; text-align: center; margin-top: 0;">Nueva Alerta en {self.home.name}</h2>
+            <p style="font-size: 16px; color: #334155; font-weight: bold; text-align: center;">{alert.title}</p>
+            <div style="background-color: #f8fafc; border-left: 4px solid #0ea5e9; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="font-size: 15px; color: #334155; margin: 0; line-height: 1.6;">{alert.message}</p>
+            </div>
+            <p style="font-size: 14px; color: #64748b; line-height: 1.6;">
+                Por favor, inicia sesión en la plataforma de E-Community para consultar los detalles de este aviso y las recomendaciones de ahorro personalizadas.
+            </p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+            <p style="font-size: 12px; color: #94a3b8; text-align: center; margin: 0;">
+                © 2026 E-Community.<br>Este es un mensaje automático de tu sistema TFG.
+            </p>
+        </div>
+        """
+        
+        message = f"Nueva Alerta en {self.home.name}: {alert.title}\n\n{alert.message}\n\nInicia sesión en la plataforma para consultar los detalles."
+
+        def send_async():
+            resend_key = os.environ.get("RESEND_API_KEY")
+            if resend_key:
+                try:
+                    res = requests.post(
+                        "https://api.resend.com/emails",
+                        headers={
+                            "Authorization": f"Bearer {resend_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "from": "onboarding@resend.dev",
+                            "to": user.email,
+                            "subject": subject,
+                            "html": html_message
+                        },
+                        timeout=8
+                    )
+                    if res.status_code in [200, 201]:
+                        print(f"Alerta enviada por email a {user.email} con Resend API.")
+                        return
+                    else:
+                        print(f"Error en Resend al enviar alerta: {res.text}")
+                except Exception as e:
+                    print(f"Error conectando con Resend API para alerta: {e}")
+
+            # Fallback al envío SMTP tradicional de Django
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER or "alerts@e-community.com",
+                    [user.email],
+                    fail_silently=False,
+                    html_message=html_message
+                )
+                print(f"Alerta enviada por email a {user.email} con SMTP.")
+            except Exception as e:
+                print(f"Error explicando/enviando email de alerta SMTP a {user.email}: {e}")
+
+        threading.Thread(target=send_async).start()
 
     def check_high_night_usage(self):
         """
