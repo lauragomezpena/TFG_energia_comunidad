@@ -447,7 +447,7 @@ export default function DashboardPage() {
 
             <div className="chart-shell">
               {chartReady && (
-                <ResponsiveContainer width="100%" height={240}>
+                <ResponsiveContainer width="100%" height={290}>
                   <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="fecha_corta" minTickGap={50} />

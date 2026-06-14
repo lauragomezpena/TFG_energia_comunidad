@@ -1,24 +1,24 @@
 .dashboard-page {
-    padding: 0.75rem 1rem;
+    padding: 1.25rem 1rem;
 }
 
 .dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
     gap: 1rem;
     flex-wrap: wrap;
 }
 
 .dashboard-title {
     color: var(--primary-dark);
-    font-size: 1.5rem;
+    font-size: 1.65rem;
 }
 
 .dashboard-subtitle {
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 
 .dashboard-actions {
@@ -42,9 +42,9 @@
 
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
     min-width: 0;
 }
 
@@ -77,42 +77,42 @@
 
 .chart-card {
     width: 100%;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     min-width: 0;
     overflow: hidden;
-    padding: 1rem;
+    padding: 1.25rem;
 }
 
 .chart-title {
-    margin-bottom: 0.75rem;
-    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
 }
 
 .chart-shell {
     width: 100%;
     min-width: 0;
-    min-height: 240px;
+    min-height: 290px;
 }
 
 /* Diagnóstico y Resumen Ejecutivo */
 .diagnostic-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .diagnostic-card {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
     align-items: center;
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
+    padding: 1rem;
+    border-radius: 12px;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    min-height: 75px;
+    min-height: 95px;
 }
 
 .diagnostic-card:hover {
@@ -121,8 +121,8 @@
 }
 
 .diagnostic-icon-wrapper {
-    padding: 8px;
-    border-radius: 8px;
+    padding: 10px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -133,35 +133,35 @@
 }
 
 .diagnostic-text {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-color);
-    line-height: 1.35;
+    line-height: 1.4;
     margin: 0;
 }
 
 .diagnostic-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
 }
 
 /* Indicadores de Comparación */
 .comparison-container {
     display: flex;
     align-items: center;
-    margin-top: 4px;
-    font-size: 0.8rem;
+    margin-top: 6px;
+    font-size: 0.85rem;
     font-weight: 600;
 }
 
 .comparison-badge {
     display: inline-flex;
     align-items: center;
-    padding: 3px 6px;
-    border-radius: 5px;
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 .comparison-green {
