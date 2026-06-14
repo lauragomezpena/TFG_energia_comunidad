@@ -1,22 +1,24 @@
 .dashboard-page {
-    padding: 2rem 1rem;
+    padding: 0.75rem 1rem;
 }
 
 .dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0.75rem;
     gap: 1rem;
     flex-wrap: wrap;
 }
 
 .dashboard-title {
     color: var(--primary-dark);
+    font-size: 1.5rem;
 }
 
 .dashboard-subtitle {
     color: var(--text-muted);
+    font-size: 0.85rem;
 }
 
 .dashboard-actions {
@@ -40,9 +42,9 @@
 
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
     min-width: 0;
 }
 
@@ -75,41 +77,42 @@
 
 .chart-card {
     width: 100%;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     min-width: 0;
     overflow: hidden;
+    padding: 1rem;
 }
 
 .chart-title {
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
 }
 
 .chart-shell {
     width: 100%;
     min-width: 0;
-    min-height: 350px;
+    min-height: 240px;
 }
 
 /* Diagnóstico y Resumen Ejecutivo */
 .diagnostic-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .diagnostic-card {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: center;
-    padding: 1.25rem;
-    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    min-height: 115px;
+    min-height: 75px;
 }
 
 .diagnostic-card:hover {
@@ -118,8 +121,8 @@
 }
 
 .diagnostic-icon-wrapper {
-    padding: 10px;
-    border-radius: 10px;
+    padding: 8px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -130,35 +133,35 @@
 }
 
 .diagnostic-text {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 500;
     color: var(--text-color);
-    line-height: 1.4;
+    line-height: 1.35;
     margin: 0;
 }
 
 .diagnostic-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 /* Indicadores de Comparación */
 .comparison-container {
     display: flex;
     align-items: center;
-    margin-top: 8px;
-    font-size: 0.85rem;
+    margin-top: 4px;
+    font-size: 0.8rem;
     font-weight: 600;
 }
 
 .comparison-badge {
     display: inline-flex;
     align-items: center;
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 3px 6px;
+    border-radius: 5px;
 }
 
 .comparison-green {
